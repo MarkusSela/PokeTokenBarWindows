@@ -2,6 +2,12 @@
 
 All notable changes to PokeTokenBar are documented here.
 
+## [0.1.12] — Poké Doll initial egg and larger Windows icon
+
+- Allow the Poké Doll to arm the initial free egg, whose `eggTier` is intentionally `null`.
+- Expose explicit egg-incubation state to the Bag renderer so the activation button updates correctly.
+- Remove transparent padding from the supplied tray/taskbar icon and regenerate the multi-resolution Windows ICO.
+
 ## [0.1.1] — Mint icon and Poké Doll follow-up
 
 - Finalized the consumable Poké Doll flow in the desktop release documentation.

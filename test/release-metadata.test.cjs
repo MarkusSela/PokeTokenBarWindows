@@ -13,22 +13,22 @@ test('release metadata uses the final release identity and project links', () =>
   const release = read('RELEASE.md');
   const funding = read('.github/FUNDING.yml');
 
-  assert.equal(packageJson.version, '0.1.1');
+  assert.equal(packageJson.version, '0.1.12');
   assert.equal(packageJson.repository.url, 'https://github.com/MarkusSela/PokeTokenBarWindows-Lab.git');
   assert.equal(packageJson.homepage, 'https://github.com/MarkusSela/PokeTokenBarWindows-Lab');
   assert.equal(packageJson.description, 'A local-first desktop companion that turns AI coding usage into Pokémon progress.');
   assert.equal(packageJson.private, undefined);
-  assert.match(readme, /> \*\*Current release: v0\.1\.1\*\*/);
-  assert.match(readme, /The current release is `v0\.1\.1`\./);
+  assert.match(readme, /> \*\*Current release: v0\.1\.12\*\*/);
+  assert.match(readme, /The current release is `v0\.1\.12`\./);
   assert.match(readme, /MarkusSela\/PokeTokenBarWindows-Lab/);
   assert.match(readme, /https:\/\/ko-fi\.com\/marukoshi/);
   assert.match(funding, /https:\/\/ko-fi\.com\/marukoshi/);
   assert.match(readme, /## About this project/);
   assert.match(readme, /## 📸 Screenshots/);
   assert.match(readme, /## 📦 Install/);
-  assert.match(changelog, /## \[0\.1\.1\] — Mint icon and Poké Doll follow-up/);
-  assert.match(release, /PokeTokenBar-Windows-Lab-Setup-0\.1\.1\.exe/);
-  assert.match(release, /tag: `v0\.1\.1`/);
+  assert.match(changelog, /## \[0\.1\.12\] — Poké Doll initial egg and larger Windows icon/);
+  assert.match(release, /PokeTokenBar-Windows-Lab-Setup-0\.1\.12\.exe/);
+  assert.match(release, /tag: `v0\.1\.12`/);
   for (const document of [readme, changelog, release]) {
     assert.doesNotMatch(document, /private preview|private-preview|preview build|early Windows preview/i);
   }

@@ -28,7 +28,7 @@
   <a href="README.ko.md">🇰🇷 한국어</a>
 </p>
 
-> **現在のリリース：v0.1.1**
+> **現在のリリース：v0.1.12**
 
 ## このプロジェクトについて
 
@@ -211,7 +211,7 @@ PokeTokenBar はローカルデータを中心に設計されています。
 
 ## 📦 インストール
 
-現在のリリースは `v0.1.1` です。
+現在のリリースは `v0.1.12` です。
 
 1. [Releases ページ](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases) を開きます。
 2. `PokeTokenBar-Windows-Lab-Setup-<version>.exe` をダウンロードします。

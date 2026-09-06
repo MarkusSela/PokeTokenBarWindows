@@ -28,7 +28,7 @@
   <a href="README.ko.md">🇰🇷 한국어</a>
 </p>
 
-> **当前版本：v0.1.1**
+> **当前版本：v0.1.12**
 
 ## 关于本项目
 
@@ -211,7 +211,7 @@ PokeTokenBar 围绕本地数据设计：
 
 ## 📦 安装
 
-当前版本为 `v0.1.1`。
+当前版本为 `v0.1.12`。
 
 1. 打开 [Releases 页面](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)。
 2. 下载 `PokeTokenBar-Windows-Lab-Setup-<version>.exe`。

@@ -724,7 +724,6 @@ class Game {
   activatePokeDoll() {
     if (
       this.state.active ||
-      !this.state.eggTier ||
       this.state.pokeDollActive ||
       !this.itemCount("pokeDoll")
     )

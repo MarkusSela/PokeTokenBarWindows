@@ -38,7 +38,7 @@ npm run dist
 
 Expected outputs:
 
-- `dist/PokeTokenBar-Windows-Lab-Setup-0.1.1.exe`
+- `dist/PokeTokenBar-Windows-Lab-Setup-0.1.12.exe`
 - `dist/win-unpacked/`
 
 Verify the packaged output:
@@ -54,13 +54,13 @@ The packaged audit must finish with no findings. Inspect the package file list a
 In Git Bash:
 
 ```shell
-sha256sum dist/PokeTokenBar-Windows-Lab-Setup-0.1.1.exe > dist/SHA256SUMS.txt
+sha256sum dist/PokeTokenBar-Windows-Lab-Setup-0.1.12.exe > dist/SHA256SUMS.txt
 ```
 
 In PowerShell, the equivalent is:
 
 ```powershell
-(Get-FileHash .\\dist\\PokeTokenBar-Windows-Lab-Setup-0.1.1.exe -Algorithm SHA256).Hash
+(Get-FileHash .\\dist\\PokeTokenBar-Windows-Lab-Setup-0.1.12.exe -Algorithm SHA256).Hash
 ```
 
 Do not include a personal machine path in the checksum file.
@@ -87,13 +87,13 @@ Repository: <https://github.com/MarkusSela/PokeTokenBarWindows-Lab>
 
 Release assets:
 
-- `PokeTokenBar-Windows-Lab-Setup-0.1.1.exe`
+- `PokeTokenBar-Windows-Lab-Setup-0.1.12.exe`
 - `SHA256SUMS.txt`
 
 Release metadata:
 
-- tag: `v0.1.1`
-- title: `PokeTokenBar v0.1.1`
+- tag: `v0.1.12`
+- title: `PokeTokenBar v0.1.12`
 
 The release body should contain:
 

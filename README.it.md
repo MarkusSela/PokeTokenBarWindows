@@ -28,7 +28,7 @@
   <a href="README.ko.md">🇰🇷 한국어</a>
 </p>
 
-> **Versione corrente: v0.1.1**
+> **Versione corrente: v0.1.12**
 
 ## Informazioni sul progetto
 
@@ -211,7 +211,7 @@ L'audit della release rifiuta percorsi assoluti personali, valori che sembrano c
 
 ## 📦 Installazione
 
-La release corrente è `v0.1.1`.
+La release corrente è `v0.1.12`.
 
 1. Apri la [pagina Releases](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases).
 2. Scarica `PokeTokenBar-Windows-Lab-Setup-<version>.exe`.

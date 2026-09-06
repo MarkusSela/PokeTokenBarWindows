@@ -284,6 +284,7 @@ function snapshot(extra = {}) {
       progress: eggProgress(game.state.eggUsage),
       remaining: eggTokensToHatch(game.state.eggUsage),
       tier: game.state.eggTier,
+      incubating: !game.state.active,
       sprite: "assets/emerald-egg-static.png",
       animatedSprite: "assets/emerald-egg.webp",
     },

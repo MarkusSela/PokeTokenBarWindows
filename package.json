@@ -1,6 +1,6 @@
 {
   "name": "poketokenbar-windows-lab",
-  "version": "0.1.1",
+  "version": "0.1.12",
   "description": "A local-first desktop companion that turns AI coding usage into Pokémon progress.",
   "author": "PokeTokenBar Windows Lab contributors",
   "license": "MIT",
