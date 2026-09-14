@@ -47,6 +47,12 @@ test('uncommon and rare egg purchases replace an incubating egg after explicit U
   assert.match(html, /window\.confirm\(/);
 });
 
+test('Poké Doll activation exposes the initial free egg to the Bag UI', () => {
+  assert.match(html, /function canActivatePokeDoll\(\)\{return Boolean\(!data\.active&&data\.egg\?\.incubating\)\}/);
+  assert.doesNotMatch(html, /function canActivatePokeDoll\(\)\{return Boolean\(!data\.active&&data\.egg\?\.tier\)\}/);
+  assert.match(main, /incubating:\s*!game\.state\.active/);
+});
+
 test('rarity badges encode the requested visual language and are used for eggs and Pokémon', () => {
   assert.match(html, /function rarityBadge\(rarity\)/);
   assert.match(html, /class="rarity-badge rarity-\$\{rarity\}"/);

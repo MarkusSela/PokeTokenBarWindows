@@ -216,9 +216,23 @@ test('Poké Doll can be bought for 250M and armed for the next hatch', () => {
   assert.equal(game.state.pokeDollActive, true);
 });
 
-test('Poké Doll activation is rejected when there is no incubating egg', () => {
+test('Poké Doll can be armed for the initial free egg even without an explicit tier', () => {
   const game = Game.fresh({
     state: { inventory: { pokeDoll: 1 }, active: null, eggTier: null, eggUsage: 0 },
+  });
+  assert.equal(game.activatePokeDoll(), true);
+  assert.equal(game.itemCount('pokeDoll'), 0);
+  assert.equal(game.state.pokeDollActive, true);
+});
+
+test('Poké Doll activation is rejected when a Pokémon is already active', () => {
+  const game = Game.fresh({
+    state: {
+      inventory: { pokeDoll: 1 },
+      active: { baseId: 1, pathIds: [1], plannedPathIds: [1], stageIndex: 0, usedAtStage: 0, rarity: 'common', totalForms: 1 },
+      eggTier: null,
+      eggUsage: 0,
+    },
   });
   assert.equal(game.activatePokeDoll(), false);
   assert.equal(game.itemCount('pokeDoll'), 1);
