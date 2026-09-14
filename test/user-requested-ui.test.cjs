@@ -44,7 +44,7 @@ test('floating pet size applies while the slider moves', () => {
 
 test('shop item icons are enlarged by sixty percent', () => {
   assert.match(html, /\.item-icon\{width:48px;height:48px/);
-  assert.match(html, /\.item-icon\.emoji\{[^}]*font-size:38px/);
+  assert.match(html, /\.item-icon\.emoji\{[^}]*font-size:42px/);
 });
 
 test('settings back control has a directional arrow and settings gear is enlarged', () => {

@@ -1,24 +1,20 @@
 const fs = require("fs");
 const path = require("path");
 const initSqlJs = require("sql.js");
+const {
+  resolveHermesDbPath,
+  resolvePlatformPaths,
+} = require("./platform-paths.cjs");
 let NativeDatabaseSync;
 try {
   ({ DatabaseSync: NativeDatabaseSync } = require("node:sqlite"));
 } catch {}
 let sqlPromise;
-function hermesHome() {
-  const value = (process.env.HERMES_HOME || "").trim();
-  if (value) return value.split(",")[0].trim();
-  return path.join(
-    process.env.LOCALAPPDATA || process.env.USERPROFILE || "",
-    "hermes",
-  );
+function hermesHome(options = {}) {
+  return resolvePlatformPaths(options).hermesHome;
 }
-function stateDbPath() {
-  const home = hermesHome();
-  return home.toLowerCase().endsWith(".db")
-    ? home
-    : path.join(home, "state.db");
+function stateDbPath(options = {}) {
+  return resolveHermesDbPath(options);
 }
 function localStart(kind, now = new Date()) {
   const d = new Date(now);

@@ -13,22 +13,53 @@ test('release metadata uses the final release identity and project links', () =>
   const release = read('RELEASE.md');
   const funding = read('.github/FUNDING.yml');
 
+  assert.equal(packageJson.version, '0.1.13');
   assert.equal(packageJson.repository.url, 'https://github.com/MarkusSela/PokeTokenBarWindows-Lab.git');
   assert.equal(packageJson.homepage, 'https://github.com/MarkusSela/PokeTokenBarWindows-Lab');
   assert.equal(packageJson.description, 'A local-first desktop companion that turns AI coding usage into Pokémon progress.');
   assert.equal(packageJson.private, undefined);
+  assert.match(readme, /> \*\*Current release: v0\.1\.13\*\*/);
+  assert.match(readme, /The current release is `v0\.1\.13`\./);
   assert.match(readme, /MarkusSela\/PokeTokenBarWindows-Lab/);
   assert.match(readme, /https:\/\/ko-fi\.com\/marukoshi/);
   assert.match(funding, /https:\/\/ko-fi\.com\/marukoshi/);
   assert.match(readme, /## About this project/);
   assert.match(readme, /## 📸 Screenshots/);
   assert.match(readme, /## 📦 Install/);
-  assert.match(changelog, /## \[0\.1\.0\] — first release/);
+  assert.match(changelog, /## \[0\.1\.13\] — Mint icon and Poké Doll follow-up/);
+  assert.match(release, /PokeTokenBar-Windows-Lab-Setup-0\.1\.13\.exe/);
+  assert.match(release, /tag: `v0\.1\.13`/);
   for (const document of [readme, changelog, release]) {
     assert.doesNotMatch(document, /private preview|private-preview|preview build|early Windows preview/i);
   }
   assert.doesNotMatch(readme, /platform-/i);
   assert.doesNotMatch(readme, /Support future ports|future companion ports/i);
+});
+
+test('README language selector points to local translated documents', () => {
+  const documents = [
+    ['README.md', 'English'],
+    ['README.zh-CN.md', '简体中文'],
+    ['README.it.md', 'Italiano'],
+    ['README.ja.md', '日本語'],
+    ['README.ko.md', '한국어'],
+  ];
+
+  for (const [documentName, languageLabel] of documents) {
+    const documentPath = path.join(root, documentName);
+    assert.equal(fs.existsSync(documentPath), true, `${languageLabel} README is missing`);
+    const document = read(documentName);
+    assert.match(document, /aria-label="Language selector"/, `${documentName} has no language selector`);
+    assert.ok(document.includes('https://ko-fi.com/marukoshi'), `${documentName} is missing the Ko-fi link`);
+    assert.ok(document.includes('img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white'), `${documentName} is missing the Ko-fi badge`);
+    assert.equal((document.match(/&nbsp;\|&nbsp;/g) || []).length, 4, `${documentName} has an incomplete language row`);
+    for (const [targetName, targetLabel] of documents) {
+      assert.ok(document.includes(`href="${targetName}"`), `${documentName} is missing ${targetLabel} link`);
+    }
+  }
+
+  const english = read('README.md');
+  assert.ok(english.indexOf('href="README.md"') < english.indexOf('href="README.zh-CN.md"'));
 });
 
 test('Windows packaging never triggers implicit GitHub publishing', () => {

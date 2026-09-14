@@ -1,4 +1,4 @@
-const { normalizeSettings } = require("./settings.cjs");
+const { booleanValue, normalizeSettings } = require("./settings.cjs");
 
 const BALANCE = Object.freeze({
   eggHatch: 5_000_000,
@@ -16,6 +16,7 @@ const BALANCE = Object.freeze({
   mint: Object.freeze({ price: 100_000_000 }),
   shinyCharm: Object.freeze({ price: 3_000_000_000, denominator: 48 }),
   freshEgg: Object.freeze({ price: 1_000_000_000 }),
+  pokeDoll: Object.freeze({ price: 250_000_000 }),
 });
 const NATURES = Object.freeze([
   "Hardy",
@@ -87,6 +88,7 @@ function emptyState() {
     eggUsage: 0,
     eggTier: null,
     pendingHatchId: null,
+    pokeDollActive: false,
     claimedTodayTokensByProvider: null,
     usageBaselineSet: false,
     claimedUsageByRow: null,
@@ -101,7 +103,7 @@ function emptyState() {
     candyFeatureSeeded: false,
     oneTimeGrants: {},
     settings: normalizeSettings(),
-    language: "it",
+    language: "en",
     representativeSpeciesId: null,
   };
 }
@@ -117,6 +119,168 @@ function ownedSpecies(state, id) {
   );
 }
 
+function finite(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+function nonNegative(value, fallback = 0) {
+  return Math.max(0, finite(value, fallback));
+}
+function integer(value, fallback = 0) {
+  return Math.round(finite(value, fallback));
+}
+function record(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+function ids(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((item) => Number(item))
+    .filter((item) => Number.isInteger(item) && item >= 1 && item <= 100_000);
+}
+function normalizedNames(value) {
+  const out = {};
+  for (const [key, raw] of Object.entries(record(value))) {
+    if (typeof raw === "string") out[key] = raw;
+    else if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      const names = {};
+      for (const language of ["en", "it"])
+        if (typeof raw[language] === "string") names[language] = raw[language];
+      if (Object.keys(names).length) out[key] = names;
+    }
+  }
+  return out;
+}
+function normalizedActive(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const pathIds = ids(value.pathIds);
+  if (!pathIds.length) return null;
+  const plannedPathIds = ids(value.plannedPathIds);
+  const plan = plannedPathIds.length ? plannedPathIds : [...pathIds];
+  const stageIndex = Math.max(0, Math.min(pathIds.length - 1, integer(value.stageIndex)));
+  const totalForms = Math.max(1, Math.min(plan.length, integer(value.totalForms, plan.length)));
+  const baseId = Number(value.baseId);
+  return {
+    baseId: Number.isInteger(baseId) && baseId >= 1 ? baseId : pathIds[0],
+    pathIds,
+    plannedPathIds: plan,
+    stageIndex,
+    usedAtStage: nonNegative(value.usedAtStage),
+    rarity: ["common", "uncommon", "rare", "legendary"].includes(value.rarity)
+      ? value.rarity
+      : "common",
+    totalForms,
+    shiny: booleanValue(value.shiny),
+    nature: typeof value.nature === "string" && value.nature ? value.nature : NATURES[0],
+    names: normalizedNames(value.names),
+    dittoDisguise: booleanValue(value.dittoDisguise),
+    dittoRevealed: booleanValue(value.dittoRevealed),
+  };
+}
+function normalizedDex(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((entry) => {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+      const chainOrder = ids(entry.chainOrder);
+      const pathOrder = ids(entry.pathIds);
+      const legacyOrder = ids([entry.baseId, entry.finalId]);
+      const normalizedChainOrder = chainOrder.length
+        ? chainOrder
+        : pathOrder.length
+          ? pathOrder
+          : [...new Set(legacyOrder)];
+      if (!normalizedChainOrder.length) return null;
+      return {
+        ...entry,
+        id: String(entry.id || `graduated-${normalizedChainOrder[0]}-${normalizedChainOrder.at(-1)}`),
+        baseId: normalizedChainOrder[0],
+        finalId: normalizedChainOrder.at(-1),
+        chainOrder: normalizedChainOrder,
+        rarity: ["common", "uncommon", "rare", "legendary"].includes(entry.rarity)
+          ? entry.rarity
+          : "common",
+        caughtAt: typeof entry.caughtAt === "string" ? entry.caughtAt : null,
+        shiny: booleanValue(entry.shiny),
+        nature: typeof entry.nature === "string" ? entry.nature : NATURES[0],
+        names: normalizedNames(entry.names),
+      };
+    })
+    .filter(Boolean);
+}
+function normalizedNumberMap(value) {
+  return Object.fromEntries(
+    Object.entries(record(value))
+      .map(([key, raw]) => [String(key), nonNegative(raw)])
+      .filter(([, number]) => Number.isFinite(number)),
+  );
+}
+function normalizedInventory(value) {
+  const out = {};
+  for (const kind of ["rareCandy", "mint", "shinyCharm", "pokeDoll"])
+    if (Object.prototype.hasOwnProperty.call(record(value), kind))
+      out[kind] = integer(nonNegative(value[kind]));
+  return out;
+}
+function normalizedMetrics(value) {
+  const metrics = ["tokens", "cost", "input", "output", "cacheRead", "cacheWrite", "reasoning"];
+  const out = {};
+  for (const [key, raw] of Object.entries(record(value))) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    out[String(key)] = {
+      ...(typeof raw.provider === "string" ? { provider: raw.provider } : {}),
+      ...Object.fromEntries(metrics.map((metric) => [metric, nonNegative(raw[metric])])),
+    };
+  }
+  return out;
+}
+function normalizeState(value) {
+  const source = record(value);
+  const out = { ...emptyState() };
+  out.version = 2;
+  out.installBaselineSet = booleanValue(source.installBaselineSet);
+  out.usedSinceInstall = nonNegative(source.usedSinceInstall);
+  out.spentTokens = nonNegative(source.spentTokens);
+  out.eggUsage = nonNegative(source.eggUsage);
+  out.eggTier = [null, "common", "uncommon", "rare"].includes(source.eggTier)
+    ? source.eggTier
+    : null;
+  out.pendingHatchId = source.pendingHatchId == null ? null : String(source.pendingHatchId);
+  out.pokeDollActive = booleanValue(source.pokeDollActive);
+  out.claimedTodayTokensByProvider = source.claimedTodayTokensByProvider == null
+    ? null
+    : normalizedNumberMap(source.claimedTodayTokensByProvider);
+  out.usageBaselineSet = booleanValue(source.usageBaselineSet);
+  out.claimedUsageByRow = normalizedNumberMap(source.claimedUsageByRow);
+  out.claimedUsageMetricsByRow = normalizedMetrics(source.claimedUsageMetricsByRow);
+  out.lastDate = typeof source.lastDate === "string" ? source.lastDate : "";
+  out.lastRefreshAt = nonNegative(source.lastRefreshAt);
+  out.active = normalizedActive(source.active);
+  out.dex = normalizedDex(source.dex);
+  out.collectedFinals = (Array.isArray(source.collectedFinals) ? source.collectedFinals : [])
+    .filter((item) => typeof item === "string" && item.length <= 256);
+  out.inventory = normalizedInventory(source.inventory);
+  out.candyGrantTier = normalizedNumberMap(source.candyGrantTier);
+  out.candyFeatureSeeded = booleanValue(source.candyFeatureSeeded);
+  out.oneTimeGrants = Object.fromEntries(
+    Object.entries(record(source.oneTimeGrants))
+      .filter(([, granted]) => booleanValue(granted))
+      .map(([key]) => [String(key), true]),
+  );
+  out.settings = normalizeSettings(source.settings);
+  out.language = typeof source.language === "string" ? source.language : "en";
+  const representative = Number(source.representativeSpeciesId);
+  out.representativeSpeciesId = Number.isInteger(representative) && representative >= 1
+    ? representative
+    : null;
+  if (source.liveUsageDisplay && typeof source.liveUsageDisplay === "object" && !Array.isArray(source.liveUsageDisplay))
+    out.liveUsageDisplay = source.liveUsageDisplay;
+  if (source.floatingPetPosition && typeof source.floatingPetPosition === "object") {
+    const x = finite(source.floatingPetPosition.x, NaN);
+    const y = finite(source.floatingPetPosition.y, NaN);
+    if (Number.isFinite(x) && Number.isFinite(y)) out.floatingPetPosition = { x, y };
+  }
+  return out;
+}
+
 class Game {
   static fresh(options = {}) {
     return new Game(options);
@@ -130,23 +294,15 @@ class Game {
     this.rng = rng;
     this.now = now;
     this.catalog = catalog;
-    this.state = { ...emptyState(), ...(state ?? {}) };
-    this.state.settings = normalizeSettings(this.state.settings);
-    this.state.oneTimeGrants = { ...(this.state.oneTimeGrants ?? {}) };
-    this.state.claimedUsageByRow = { ...(this.state.claimedUsageByRow ?? {}) };
-    this.state.claimedUsageMetricsByRow = {
-      ...(this.state.claimedUsageMetricsByRow ?? {}),
-    };
-    this.state.representativeSpeciesId =
-      this.state.representativeSpeciesId == null
-        ? null
-        : Number(this.state.representativeSpeciesId);
+    this.state = normalizeState(state);
   }
   get wallet() {
     return Math.max(0, this.state.usedSinceInstall - this.state.spentTokens);
   }
   itemCount(kind) {
-    return this.state.inventory[kind] ?? 0;
+    if (!Object.prototype.hasOwnProperty.call(this.state.inventory, kind)) return 0;
+    const count = Number(this.state.inventory[kind]);
+    return Number.isFinite(count) && count >= 0 ? Math.floor(count) : 0;
   }
   setCatalog(catalog) {
     this.catalog = catalog;
@@ -287,8 +443,20 @@ class Game {
           existing[metric] = (existing[metric] || 0) + providerDelta[metric];
         byProvider.set(item.provider, existing);
       }
-      ledger[key] = tokens;
-      metricLedger[key] = { ...item };
+      ledger[key] = Number.isFinite(previous) ? Math.max(previous, tokens) : tokens;
+      metricLedger[key] = {
+        ...item,
+        ...Object.fromEntries(metrics.map((metric) => {
+          const previousMetric = Number(previousMetrics?.[metric]);
+          const currentMetric = item[metric];
+          return [
+            metric,
+            Number.isFinite(previousMetric)
+              ? Math.max(previousMetric, currentMetric)
+              : currentMetric,
+          ];
+        })),
+      };
     }
     this.state.claimedUsageByRow = ledger;
     this.state.claimedUsageMetricsByRow = metricLedger;
@@ -351,7 +519,7 @@ class Game {
       this.state.lastDate = date;
     } else
       for (const [p, total] of Object.entries(totals)) {
-        if (!(p in ledger)) ledger[p] = total;
+        if (!Object.prototype.hasOwnProperty.call(ledger, p)) ledger[p] = total;
         else if (total >= ledger[p]) {
           delta += total - ledger[p];
           ledger[p] = total;
@@ -369,28 +537,61 @@ class Game {
         this.hatch();
     } else this.applyUsageToActive(delta);
   }
-  chooseBase() {
-    const pool = this.catalog.filter(
+  eggPool() {
+    return this.catalog.filter(
       (x) =>
         !this.state.eggTier ||
         x.captureRate <=
           ({ uncommon: 120, rare: 45 }[this.state.eggTier] ?? 255),
     );
+  }
+  hasDexSpecies(id) {
+    const speciesId = Number(id);
+    return this.state.dex.some((entry) => {
+      const ids = [
+        ...(Array.isArray(entry.chainOrder) ? entry.chainOrder : []),
+        ...(Array.isArray(entry.pathIds) ? entry.pathIds : []),
+        entry.baseId,
+        entry.finalId,
+      ].map(Number);
+      return ids.includes(speciesId);
+    });
+  }
+  hasUnseenBase() {
+    return this.eggPool().some((entry) => !this.hasDexSpecies(entry.id));
+  }
+  shouldAvoidPokeDollDuplicates(isShiny) {
+    return Boolean(this.state.pokeDollActive && !isShiny);
+  }
+  rollShiny() {
+    return this.rng() <
+      1 / (this.itemCount("shinyCharm") ? BALANCE.shinyCharm.denominator : 64);
+  }
+  chooseBase({ avoidOwned = false } = {}) {
+    const pool = this.eggPool();
     if (!pool.length) return null;
-    const weights = pool.map((x) =>
+    const available = avoidOwned
+      ? pool.filter((entry) => !this.hasDexSpecies(entry.id))
+      : pool;
+    const selectionPool = avoidOwned ? available : pool;
+    if (!selectionPool.length) return null;
+    const weights = selectionPool.map((x) =>
       this.state.collectedFinals.some((key) => key.startsWith(`${x.id}:`))
         ? Math.max(1, Math.floor(x.captureRate / 2))
         : Math.max(1, x.captureRate),
     );
     let roll = this.rng() * weights.reduce((a, b) => a + b, 0);
-    for (let i = 0; i < pool.length; i++) {
+    for (let i = 0; i < selectionPool.length; i++) {
       roll -= weights[i];
-      if (roll < 0) return pool[i];
+      if (roll < 0) return selectionPool[i];
     }
-    return pool.at(-1);
+    return selectionPool.at(-1);
   }
   hatch() {
-    const pick = this.chooseBase();
+    const isShiny = this.rollShiny();
+    const pick = this.chooseBase({
+      avoidOwned: this.shouldAvoidPokeDollDuplicates(isShiny),
+    });
     if (!pick) return false;
     return this.hatchLine(
       pick.line ?? {
@@ -399,17 +600,24 @@ class Game {
         rarity: rarity(pick),
         names: { [pick.id]: `#${pick.id}` },
       },
+      { isShiny },
     );
   }
-  hatchLine(line) {
+  hatchLine(line, options = {}) {
     const tier = this.state.eggTier;
     const ranks = { common: 0, uncommon: 1, rare: 2, legendary: 3 };
     if (tier && ranks[line.rarity] < ranks[tier]) return false;
     const overflow = Math.max(0, this.state.eggUsage - BALANCE.eggHatch);
     const plan = line.pathIds?.length ? line.pathIds : [line.baseId];
     const isShiny =
-      this.rng() <
-      1 / (this.itemCount("shinyCharm") ? BALANCE.shinyCharm.denominator : 64);
+      typeof options.isShiny === "boolean" ? options.isShiny : this.rollShiny();
+    if (
+      this.state.pokeDollActive &&
+      !isShiny &&
+      this.hasUnseenBase() &&
+      this.hasDexSpecies(line.baseId)
+    )
+      return false;
     const nature = NATURES[Math.floor(this.rng() * NATURES.length)];
     const disguise =
       line.rarity === "common" && plan.length >= 2 && this.rng() < 1 / 128
@@ -431,6 +639,7 @@ class Game {
     };
     this.state.eggUsage = 0;
     this.state.eggTier = null;
+    this.state.pokeDollActive = false;
     if (overflow) this.applyUsageToActive(overflow);
     return true;
   }
@@ -495,11 +704,13 @@ class Game {
     this.state.eggUsage = 0;
   }
   buyItem(kind) {
-    const item = {
+    const items = {
       rareCandy: BALANCE.rareCandy,
       mint: BALANCE.mint,
       shinyCharm: BALANCE.shinyCharm,
-    }[kind];
+      pokeDoll: BALANCE.pokeDoll,
+    };
+    const item = Object.prototype.hasOwnProperty.call(items, kind) ? items[kind] : null;
     if (
       !item ||
       this.wallet < item.price ||
@@ -508,6 +719,18 @@ class Game {
       return false;
     this.state.spentTokens += item.price;
     this.state.inventory[kind] = this.itemCount(kind) + 1;
+    return true;
+  }
+  activatePokeDoll() {
+    if (
+      this.state.active ||
+      !this.state.eggTier ||
+      this.state.pokeDollActive ||
+      !this.itemCount("pokeDoll")
+    )
+      return false;
+    this.state.inventory.pokeDoll--;
+    this.state.pokeDollActive = true;
     return true;
   }
   useRareCandy() {
@@ -569,4 +792,5 @@ module.exports = {
   eggProgress,
   eggTokensToHatch,
   emptyState,
+  normalizeState,
 };

@@ -61,6 +61,7 @@ test('settings drive the real Electron refresh and login behaviors', () => {
   assert.match(main, /lastRefreshAt/);
   assert.match(main, /function createFloatingPet\(\)/);
   assert.match(main, /function syncFloatingPet\(\)/);
+  assert.match(main, /function createFloatingPet\(\) \{\s*if \(petWin && !petWin\.isDestroyed\(\)\)/);
   assert.match(main, /petController\?\.cancelDrag\(\)/);
   assert.match(main, /value\.key\s*===\s*["']floatingPetSize["'][\s\S]*placeFloatingPet\(\)/);
   assert.match(floating, /html,\s*body\s*\{[\s\S]*width: 100%;[\s\S]*height: 100%;/);

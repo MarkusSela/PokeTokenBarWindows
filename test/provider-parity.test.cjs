@@ -236,3 +236,69 @@ test('provider defaults cover the same local tool family as the macOS reference'
     ['claude_code', 'gemini', 'antigravity', 'codex', 'opencode', 'cursor', 'grok', 'copilot', 'kiro', 'pi'],
   );
 });
+
+test('provider definitions honor the injected environment instead of the process environment', () => {
+  const home = 'C:/fixture/home';
+  const env = {
+    HOME: home,
+    USERPROFILE: home,
+    APPDATA: 'C:/fixture/appdata',
+    LOCALAPPDATA: 'C:/fixture/local-appdata',
+    OPENCODE_DATA_DIR: 'C:/fixture/custom-opencode',
+    CURSOR_DATA_DIR: 'C:/fixture/custom-cursor',
+  };
+  const definitions = providerDefinitions(home, env);
+  const openCode = definitions.find(({ id }) => id === 'opencode');
+  const cursor = definitions.find(({ id }) => id === 'cursor');
+
+  assert.deepEqual(openCode.roots, [
+    'C:/fixture/custom-opencode',
+    path.join('C:/fixture/local-appdata', 'opencode'),
+    path.join('C:/fixture/appdata', 'opencode'),
+    path.join('C:/fixture/home', '.local', 'share', 'opencode'),
+  ]);
+  assert.deepEqual(cursor.roots, [
+    'C:/fixture/custom-cursor',
+    path.join('C:/fixture/appdata', 'Cursor', 'User', 'globalStorage'),
+    path.join('C:/fixture/appdata', 'Cursor Nightly', 'User', 'globalStorage'),
+  ]);
+});
+
+test('local provider reader uses injected provider roots', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ptb-provider-env-'));
+  const now = new Date(2026, 7, 30, 12, 0, 0);
+  const grokHome = path.join(root, 'grok-home');
+  const session = path.join(grokHome, 'sessions', 'session-1');
+  fs.mkdirSync(session, { recursive: true });
+  fs.writeFileSync(
+    path.join(session, 'updates.jsonl'),
+    `${JSON.stringify({
+      timestamp: now.getTime() / 1000,
+      params: {
+        update: {
+          sessionUpdate: 'turn_completed',
+          prompt_id: 'injected-grok-turn',
+          usage: { inputTokens: 2, outputTokens: 3, totalTokens: 5 },
+        },
+        _meta: { agentTimestampMs: now.getTime() },
+      },
+    })}\n`,
+  );
+
+  try {
+    const home = path.join(root, 'home');
+    const usage = await readLocalProviderUsage(now, {
+      home,
+      env: {
+        HOME: home,
+        USERPROFILE: home,
+        APPDATA: path.join(root, 'appdata'),
+        LOCALAPPDATA: path.join(root, 'local-appdata'),
+        GROK_HOME: grokHome,
+      },
+    });
+    assert.deepEqual(usage.todayProviders.map(({ name, tokens }) => [name, tokens]), [['Grok', 5]]);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

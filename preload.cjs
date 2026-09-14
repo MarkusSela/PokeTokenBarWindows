@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld("ptb", {
     ipcRenderer.on("popover-opened", listener);
     return () => ipcRenderer.removeListener("popover-opened", listener);
   },
+
   onGoldConfig: (callback) => {
     const listener = (_event, config) => callback(config);
     ipcRenderer.on("gold-config", listener);

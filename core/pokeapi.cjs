@@ -28,6 +28,9 @@ function shippedCatalog() {
     return [];
   }
 }
+function loadShippedCatalog() {
+  return shippedCatalog();
+}
 async function json(url, options = {}) {
   const response = await fetch(url, {
     ...options,
@@ -139,4 +142,4 @@ function choosePath(line, collectedFinals, rng = Math.random) {
   }
   return { ...line, pathIds: line.pathOptions.at(-1) };
 }
-module.exports = { PokeApi, choosePath };
+module.exports = { PokeApi, choosePath, loadShippedCatalog };

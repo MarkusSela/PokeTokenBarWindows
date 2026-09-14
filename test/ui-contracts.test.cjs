@@ -17,6 +17,7 @@ test('main navigation and persistent bottom system bar are present', () => {
 
 test('shop and bag expose local item icons and all original purchasable entries', () => {
   assert.match(html, /rareCandy:'rare-candy'/);
+  assert.match(html, /mint:'mint'/);
   assert.match(html, /shinyCharm:'shiny-charm'/);
   assert.match(html, /src="assets\/items\/\$\{names\[kind\]\}\.png"/);
   assert.match(html, /Mint/);

@@ -36,4 +36,36 @@ function buildCatchLogEntries({ active = null, dex = [] } = {}) {
   return activeEntry ? [activeEntry, ...graduated] : graduated;
 }
 
-module.exports = { buildCatchLogEntries, normalizeEntry };
+function entryName(entry, id) {
+  const value = entry?.names?.[id];
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') return value.it || value.en || `#${id}`;
+  return `#${id}`;
+}
+
+function buildPokedexEntries({ active = null, dex = [] } = {}) {
+  const species = new Map();
+  for (const entry of buildCatchLogEntries({ active, dex })) {
+    for (const rawId of entry.chainOrder) {
+      const id = Number(rawId);
+      if (!Number.isInteger(id) || id < 1 || id > 100_000) continue;
+      const current = species.get(id);
+      if (current) {
+        current.shiny ||= Boolean(entry.shiny);
+        current.isRaising ||= entry.kind === 'active';
+        if (current.name === `#${id}`) current.name = entryName(entry, id);
+      } else {
+        species.set(id, {
+          id,
+          name: entryName(entry, id),
+          shiny: Boolean(entry.shiny),
+          isRaising: entry.kind === 'active',
+          rarity: entry.rarity || 'common',
+        });
+      }
+    }
+  }
+  return [...species.values()].sort((left, right) => left.id - right.id);
+}
+
+module.exports = { buildCatchLogEntries, buildPokedexEntries, normalizeEntry };

@@ -14,6 +14,14 @@ test('embedded renderer script remains syntactically valid', () => {
   assert.doesNotThrow(() => new vm.Script(script));
 });
 
+test('renderer loads its first snapshot before rendering Home', () => {
+  assert.match(html, /async function load\(\)\{data=await window\.ptb\.snapshot\(\);render\(\)\}/);
+});
+
+test('renderer has a safe bootstrap snapshot while IPC is pending', () => {
+  assert.match(html, /let data=\{state:\{inventory:\{\},dex:\[\]\}/);
+});
+
 test('renderer preserves scroll position when rerendering the same section', () => {
   assert.match(html, /lastRenderedTab/);
   assert.match(html, /scrollPositions/);

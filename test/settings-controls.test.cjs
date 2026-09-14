@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { DEFAULT_SETTINGS, normalizeSettings, updateSetting } = require('../core/settings.cjs');
+const { normalizeState } = require('../core/game.cjs');
 
 const toggleKeys = [
   'launchAtLogin', 'menuTodayTokens', 'menuTodayCost', 'menuLimitPercent',
@@ -34,4 +35,16 @@ test('all settings sliders clamp safely at their documented bounds', () => {
   assert.equal(updateSetting(DEFAULT_SETTINGS, 'floatingPetSize', 999).floatingPetSize, 256);
   assert.equal(updateSetting(DEFAULT_SETTINGS, 'goldWalkingSize', 1).goldWalkingSize, 24);
   assert.equal(updateSetting(DEFAULT_SETTINGS, 'goldWalkingSize', 999).goldWalkingSize, 128);
+
+});
+
+test('Gold walking settings survive normalization and clamp their size', () => {
+  const normalized = normalizeSettings({ showGoldWalking: true, goldWalkingSize: 128 });
+  assert.equal(normalized.showGoldWalking, true);
+  assert.equal(normalized.goldWalkingSize, 128);
+});
+
+test('English is the primary language for a new or legacy state without a language', () => {
+  assert.equal(DEFAULT_SETTINGS.language, 'en');
+  assert.equal(normalizeState({}).language, 'en');
 });

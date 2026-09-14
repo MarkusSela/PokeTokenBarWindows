@@ -6,13 +6,19 @@ const path = require('node:path');
 test('static app icon is shipped with the desktop app', () => {
   const appIcon = path.join(__dirname, '..', 'assets', 'app-icon.png');
   const rareCandy = path.join(__dirname, '..', 'assets', 'items', 'rare-candy.png');
+  const mint = path.join(__dirname, '..', 'assets', 'items', 'mint.png');
   const shinyCharm = path.join(__dirname, '..', 'assets', 'items', 'shiny-charm.png');
+  const pokeDoll = path.join(__dirname, '..', 'assets', 'items', 'poke-doll.png');
   assert.equal(fs.existsSync(appIcon), true);
   assert.equal(fs.existsSync(rareCandy), true);
+  assert.equal(fs.existsSync(mint), true);
   assert.equal(fs.existsSync(shinyCharm), true);
+  assert.equal(fs.existsSync(pokeDoll), true);
   assert.ok(fs.statSync(appIcon).size > 100);
   assert.ok(fs.statSync(rareCandy).size > 100);
+  assert.ok(fs.statSync(mint).size > 100);
   assert.ok(fs.statSync(shinyCharm).size > 100);
+  assert.ok(fs.statSync(pokeDoll).size > 100);
 });
 
 test('installer carries the static app icon outside the asar archive', () => {

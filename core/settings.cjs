@@ -10,6 +10,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   floatingPetSize: 96,
   showGoldWalking: false,
   goldWalkingSize: 76,
+
   notificationsBubbles: true,
   updateNotifications: true,
   limitAlerts: true,
@@ -32,6 +33,7 @@ const TOGGLES = [
   "menuLimitPercent",
   "showFloatingPet",
   "showGoldWalking",
+
   "notificationsBubbles",
   "updateNotifications",
   "limitAlerts",
@@ -45,8 +47,27 @@ function clampInt(value, min, max, fallback) {
     ? Math.max(min, Math.min(max, Math.round(n)))
     : fallback;
 }
+function booleanValue(value, fallback = false) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") {
+    if (value === 1) return true;
+    if (value === 0) return false;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["1", "true", "yes", "on"].includes(normalized)) return true;
+    if (["0", "false", "no", "off"].includes(normalized)) return false;
+  }
+  return fallback;
+}
 function normalizeSettings(input = {}) {
-  const out = { ...DEFAULT_SETTINGS, ...input };
+  const source = input && typeof input === "object" ? input : {};
+  const out = Object.fromEntries(
+    Object.keys(DEFAULT_SETTINGS).map((key) => [
+      key,
+      source[key] === undefined ? DEFAULT_SETTINGS[key] : source[key],
+    ]),
+  );
   if (out.refreshMinutes === "manual") out.refreshMinutes = 0;
   else if (Number.isFinite(Number(out.refreshMinutes)))
     out.refreshMinutes = clampInt(
@@ -58,7 +79,7 @@ function normalizeSettings(input = {}) {
   else out.refreshMinutes = DEFAULT_SETTINGS.refreshMinutes;
   for (const key of ["language", "limitDisplay"])
     if (!SELECTS[key].includes(out[key])) out[key] = DEFAULT_SETTINGS[key];
-  for (const key of TOGGLES) out[key] = Boolean(out[key]);
+  for (const key of TOGGLES) out[key] = booleanValue(out[key], DEFAULT_SETTINGS[key]);
   out.warningPercent = clampInt(
     out.warningPercent,
     0,
@@ -83,6 +104,7 @@ function normalizeSettings(input = {}) {
     128,
     DEFAULT_SETTINGS.goldWalkingSize,
   );
+
   out.additionalScanFolders = Array.isArray(out.additionalScanFolders)
     ? out.additionalScanFolders.filter((x) => typeof x === "string" && x.trim())
     : [];
@@ -91,4 +113,4 @@ function normalizeSettings(input = {}) {
 function updateSetting(settings, key, value) {
   return normalizeSettings({ ...settings, [key]: value });
 }
-module.exports = { DEFAULT_SETTINGS, normalizeSettings, updateSetting };
+module.exports = { DEFAULT_SETTINGS, booleanValue, normalizeSettings, updateSetting };

@@ -15,20 +15,20 @@ const SKIP_DIRECTORIES = new Set(['node_modules', '.git', 'cache', 'Cache', 'Cod
 const fileCache = new Map();
 const databaseCache = new Map();
 
-function userHome() {
-  return process.env.USERPROFILE || process.env.HOME || path.join(process.env.HOMEDRIVE || 'C:', process.env.HOMEPATH || '\\Users');
+function userHome(env = process.env) {
+  return env.USERPROFILE || env.HOME || path.join(env.HOMEDRIVE || 'C:', env.HOMEPATH || '\\Users');
 }
 
-function appData() {
-  return process.env.APPDATA || path.join(userHome(), 'AppData', 'Roaming');
+function appData(env = process.env) {
+  return env.APPDATA || path.join(userHome(env), 'AppData', 'Roaming');
 }
 
-function localAppData() {
-  return process.env.LOCALAPPDATA || path.join(userHome(), 'AppData', 'Local');
+function localAppData(env = process.env) {
+  return env.LOCALAPPDATA || path.join(userHome(env), 'AppData', 'Local');
 }
 
-function splitEnvironment(name) {
-  const raw = String(process.env[name] || '').trim();
+function splitEnvironment(name, env = process.env) {
+  const raw = String(env[name] || '').trim();
   return raw
     ? raw.split(',').map((value) => value.trim()).filter(Boolean)
     : [];
@@ -46,18 +46,19 @@ function uniquePaths(values) {
   });
 }
 
-function providerDefinitions(home = userHome()) {
-  const claudeConfigRoots = splitEnvironment('CLAUDE_CONFIG_DIR')
+function providerDefinitions(home, env = process.env) {
+  const resolvedHome = home || userHome(env);
+  const claudeConfigRoots = splitEnvironment('CLAUDE_CONFIG_DIR', env)
     .map((root) => path.join(root, 'projects'));
-  const grokHome = splitEnvironment('GROK_HOME')
+  const grokHome = splitEnvironment('GROK_HOME', env)
     .map((root) => path.join(root, 'sessions'));
-  const piAgentRoots = splitEnvironment('PI_CODING_AGENT_DIR')
+  const piAgentRoots = splitEnvironment('PI_CODING_AGENT_DIR', env)
     .map((root) => path.join(root, 'sessions'));
-  const piSessionRoots = splitEnvironment('PI_CODING_AGENT_SESSION_DIR');
-  const openCodeRoots = splitEnvironment('OPENCODE_DATA_DIR');
-  const cursorRoots = splitEnvironment('CURSOR_DATA_DIR');
-  const copilotRoots = splitEnvironment('COPILOT_HOME');
-  const kiroRoots = splitEnvironment('KIRO_CLI_HOME');
+  const piSessionRoots = splitEnvironment('PI_CODING_AGENT_SESSION_DIR', env);
+  const openCodeRoots = splitEnvironment('OPENCODE_DATA_DIR', env);
+  const cursorRoots = splitEnvironment('CURSOR_DATA_DIR', env);
+  const copilotRoots = splitEnvironment('COPILOT_HOME', env);
+  const kiroRoots = splitEnvironment('KIRO_CLI_HOME', env);
 
   return [
     {
@@ -65,24 +66,24 @@ function providerDefinitions(home = userHome()) {
       name: 'Claude Code',
       roots: uniquePaths([
         ...claudeConfigRoots,
-        path.join(home, '.config', 'claude', 'projects'),
-        path.join(home, '.claude', 'projects'),
+        path.join(resolvedHome, '.config', 'claude', 'projects'),
+        path.join(resolvedHome, '.claude', 'projects'),
       ]),
       read: readClaude,
     },
     {
       id: 'gemini',
       name: 'Gemini',
-      roots: [path.join(home, '.gemini', 'tmp')],
+      roots: [path.join(resolvedHome, '.gemini', 'tmp')],
       read: readGemini,
     },
     {
       id: 'antigravity',
       name: 'Antigravity',
       roots: [
-        path.join(home, '.gemini', 'antigravity', 'conversations'),
-        path.join(home, '.gemini', 'antigravity-cli', 'conversations'),
-        path.join(home, '.gemini', 'antigravity-ide', 'conversations'),
+        path.join(resolvedHome, '.gemini', 'antigravity', 'conversations'),
+        path.join(resolvedHome, '.gemini', 'antigravity-cli', 'conversations'),
+        path.join(resolvedHome, '.gemini', 'antigravity-ide', 'conversations'),
       ],
       read: readAntigravity,
     },
@@ -90,8 +91,8 @@ function providerDefinitions(home = userHome()) {
       id: 'codex',
       name: 'Codex',
       roots: [
-        path.join(home, '.codex', 'sessions'),
-        path.join(home, '.codex', 'archived_sessions'),
+        path.join(resolvedHome, '.codex', 'sessions'),
+        path.join(resolvedHome, '.codex', 'archived_sessions'),
       ],
       read: readCodex,
     },
@@ -100,9 +101,9 @@ function providerDefinitions(home = userHome()) {
       name: 'OpenCode',
       roots: uniquePaths([
         ...openCodeRoots,
-        path.join(localAppData(), 'opencode'),
-        path.join(appData(), 'opencode'),
-        path.join(home, '.local', 'share', 'opencode'),
+        path.join(localAppData(env), 'opencode'),
+        path.join(appData(env), 'opencode'),
+        path.join(resolvedHome, '.local', 'share', 'opencode'),
       ]),
       read: readOpenCode,
     },
@@ -111,8 +112,8 @@ function providerDefinitions(home = userHome()) {
       name: 'Cursor',
       roots: uniquePaths([
         ...cursorRoots,
-        path.join(appData(), 'Cursor', 'User', 'globalStorage'),
-        path.join(appData(), 'Cursor Nightly', 'User', 'globalStorage'),
+        path.join(appData(env), 'Cursor', 'User', 'globalStorage'),
+        path.join(appData(env), 'Cursor Nightly', 'User', 'globalStorage'),
       ]),
       read: readCursor,
     },
@@ -121,7 +122,7 @@ function providerDefinitions(home = userHome()) {
       name: 'Grok',
       roots: uniquePaths([
         ...grokHome,
-        path.join(home, '.grok', 'sessions'),
+        path.join(resolvedHome, '.grok', 'sessions'),
       ]),
       read: readGrok,
     },
@@ -130,7 +131,7 @@ function providerDefinitions(home = userHome()) {
       name: 'Copilot',
       roots: uniquePaths([
         ...copilotRoots,
-        path.join(home, '.copilot'),
+        path.join(resolvedHome, '.copilot'),
       ]),
       read: readCopilot,
     },
@@ -139,9 +140,9 @@ function providerDefinitions(home = userHome()) {
       name: 'Kiro',
       roots: uniquePaths([
         ...kiroRoots,
-        path.join(appData(), 'kiro-cli'),
-        path.join(localAppData(), 'kiro-cli'),
-        path.join(home, '.kiro'),
+        path.join(appData(env), 'kiro-cli'),
+        path.join(localAppData(env), 'kiro-cli'),
+        path.join(resolvedHome, '.kiro'),
       ]),
       read: readKiro,
     },
@@ -151,7 +152,7 @@ function providerDefinitions(home = userHome()) {
       roots: uniquePaths([
         ...piAgentRoots,
         ...piSessionRoots,
-        path.join(home, '.pi', 'agent', 'sessions'),
+        path.join(resolvedHome, '.pi', 'agent', 'sessions'),
       ]),
       read: readPi,
     },
@@ -1005,7 +1006,8 @@ function readAntigravity(roots) {
 }
 
 async function readLocalProviderUsage(now = new Date(), options = {}) {
-  const definitions = providerDefinitions(options.home || userHome());
+  const env = options.env || process.env;
+  const definitions = providerDefinitions(options.home || userHome(env), env);
   const overrides = options.roots || {};
   const entries = [];
   for (const definition of definitions) {

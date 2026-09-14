@@ -203,3 +203,96 @@ test('usage row deltas expose provider totals for live counters', () => {
     byProvider: [{ name: 'openai-codex', tokens: 25, cost: 0, input: 10, output: 5, cacheRead: 10, cacheWrite: 0, reasoning: 0 }],
   });
 });
+
+test('Poké Doll can be bought for 250M and armed for the next hatch', () => {
+  const game = Game.fresh({
+    state: { usedSinceInstall: 250_000_000, eggTier: 'common' },
+  });
+  assert.equal(BALANCE.pokeDoll.price, 250_000_000);
+  assert.equal(game.buyItem('pokeDoll'), true);
+  assert.equal(game.itemCount('pokeDoll'), 1);
+  assert.equal(game.activatePokeDoll(), true);
+  assert.equal(game.itemCount('pokeDoll'), 0);
+  assert.equal(game.state.pokeDollActive, true);
+});
+
+test('Poké Doll activation is rejected when there is no incubating egg', () => {
+  const game = Game.fresh({
+    state: { inventory: { pokeDoll: 1 }, active: null, eggTier: null, eggUsage: 0 },
+  });
+  assert.equal(game.activatePokeDoll(), false);
+  assert.equal(game.itemCount('pokeDoll'), 1);
+  assert.equal(game.state.pokeDollActive, false);
+});
+
+test('Poké Doll avoids a species already in the Pokédex for a non-shiny hatch', () => {
+  const game = new Game({
+    state: {
+      pokeDollActive: true,
+      dex: [{ chainOrder: [4], rarity: 'rare', names: { 4: 'Charmander' } }],
+    },
+    catalog: [
+      { id: 4, captureRate: 45, line: { baseId: 4, pathIds: [4], rarity: 'rare', names: { 4: 'Charmander' } } },
+      { id: 7, captureRate: 45, line: { baseId: 7, pathIds: [7], rarity: 'rare', names: { 7: 'Squirtle' } } },
+    ],
+    rng: () => 0.1,
+  });
+  assert.equal(game.hatch(), true);
+  assert.equal(game.state.active.baseId, 7);
+  assert.equal(game.state.active.shiny, false);
+  assert.equal(game.state.pokeDollActive, false);
+});
+
+test('Poké Doll allows a shiny hatch of a species already in the Pokédex', () => {
+  const game = new Game({
+    state: {
+      pokeDollActive: true,
+      dex: [{ chainOrder: [4], rarity: 'rare', names: { 4: 'Charmander' } }],
+    },
+    catalog: [
+      { id: 4, captureRate: 45, line: { baseId: 4, pathIds: [4], rarity: 'rare', names: { 4: 'Charmander' } } },
+      { id: 7, captureRate: 45, line: { baseId: 7, pathIds: [7], rarity: 'rare', names: { 7: 'Squirtle' } } },
+    ],
+    rng: () => 0,
+  });
+  assert.equal(game.hatch(), true);
+  assert.equal(game.state.active.baseId, 4);
+  assert.equal(game.state.active.shiny, true);
+  assert.equal(game.state.pokeDollActive, false);
+});
+
+test('Poké Doll recognizes legacy Pokédex records without chainOrder', () => {
+  const game = new Game({
+    state: {
+      pokeDollActive: true,
+      dex: [{ baseId: 4, finalId: 6, rarity: 'common', names: { 4: 'Charmander', 6: 'Charizard' } }],
+    },
+    catalog: [
+      { id: 4, captureRate: 45, line: { baseId: 4, pathIds: [4], rarity: 'common', names: { 4: 'Charmander' } } },
+      { id: 7, captureRate: 45, line: { baseId: 7, pathIds: [7], rarity: 'common', names: { 7: 'Squirtle' } } },
+    ],
+    rng: () => 0.1,
+  });
+  assert.equal(game.hatch(), true);
+  assert.equal(game.state.active.baseId, 7);
+});
+
+test('Poké Doll keeps a normal hatch pending when every base species is already owned', () => {
+  const game = new Game({
+    state: {
+      pokeDollActive: true,
+      dex: [
+        { chainOrder: [4], rarity: 'common', names: { 4: 'Charmander' } },
+        { chainOrder: [7], rarity: 'common', names: { 7: 'Squirtle' } },
+      ],
+    },
+    catalog: [
+      { id: 4, captureRate: 45, line: { baseId: 4, pathIds: [4], rarity: 'common', names: { 4: 'Charmander' } } },
+      { id: 7, captureRate: 45, line: { baseId: 7, pathIds: [7], rarity: 'common', names: { 7: 'Squirtle' } } },
+    ],
+    rng: () => 0.1,
+  });
+  assert.equal(game.hatch(), false);
+  assert.equal(game.state.active, null);
+  assert.equal(game.state.pokeDollActive, true);
+});

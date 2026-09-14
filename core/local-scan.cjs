@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const crypto = require("node:crypto");
 
 const EXTENSIONS = new Set([".json", ".jsonl", ".ndjson", ".log"]);
 const MAX_DEPTH = 5;
@@ -106,6 +107,34 @@ function providerFor(file, root) {
   const base = path.basename(root || path.dirname(file));
   return base || path.basename(file, path.extname(file));
 }
+function canonicalRoot(value) {
+  const lexical = path.resolve(value);
+  try {
+    return path.normalize((fs.realpathSync.native || fs.realpathSync)(lexical));
+  } catch {
+    return lexical;
+  }
+}
+function containsRoot(parent, child) {
+  const relative = path.relative(parent, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+function scanRoots(folders) {
+  const candidates = [...new Set(
+    (Array.isArray(folders) ? folders : [])
+      .map((value) => typeof value === "string" ? value.trim() : "")
+      .filter(Boolean)
+      .map(canonicalRoot),
+  )].sort((left, right) => left.length - right.length || left.localeCompare(right));
+  const selected = [];
+  for (const candidate of candidates)
+    if (!selected.some((root) => containsRoot(root, candidate) || containsRoot(candidate, root)))
+      selected.push(candidate);
+  return selected;
+}
+function progressionKey(root, provider) {
+  return `scan:${crypto.createHash("sha256").update(`${root}\0${provider}`).digest("hex").slice(0, 24)}`;
+}
 function filesUnder(root) {
   const out = [];
   function walk(current, depth) {
@@ -196,6 +225,7 @@ async function scanAdditionalFolders(folders = [], options = {}) {
   const total = empty("Additional scan");
   const providers = new Map();
   const todayProviders = new Map();
+  const progression = new Map();
   const windows = {
     today: empty("Today"),
     week: empty("Week"),
@@ -211,19 +241,19 @@ async function scanAdditionalFolders(folders = [], options = {}) {
   const monthStart = startOfLocalMonth(now);
   const blockStart = new Date(now.getTime() - 5 * 60 * 60 * 1000);
   let unattributedRows = 0;
-  const seen = new Set();
-  for (const raw of folders) {
-    const root = typeof raw === "string" ? raw.trim() : "";
-    if (!root || seen.has(root)) continue;
-    seen.add(root);
+  for (const root of scanRoots(folders)) {
     if (!fs.existsSync(root)) continue;
     for (const file of filesUnder(root)) {
       const fileProvider = providerFor(file, root);
       for (const record of parseFile(file)) {
         const name = record.provider || fileProvider;
         const bucket = providers.get(name) || empty(name);
+        const rootKey = `${root}\0${name}`;
+        const rootBucket = progression.get(rootKey) || empty(name);
         add(bucket, record.usage);
+        add(rootBucket, record.usage);
         add(total, record.usage);
+        progression.set(rootKey, rootBucket);
         if (!record.timestamp || record.timestamp >= dayStart) {
           const todayBucket = todayProviders.get(name) || empty(name);
           add(todayBucket, record.usage);
@@ -251,6 +281,9 @@ async function scanAdditionalFolders(folders = [], options = {}) {
     block5h: snapshot(windows.block5h),
     providers: [...providers.values()].sort((a, b) => b.tokens - a.tokens),
     todayProviders: [...todayProviders.values()].sort((a, b) => b.tokens - a.tokens),
+    progressionRows: [...progression.entries()]
+      .map(([key, bucket]) => ({ key: progressionKey(...key.split("\0")), provider: bucket.name, ...snapshot(bucket) }))
+      .sort((a, b) => a.key.localeCompare(b.key)),
     totalRows: total.sessions,
     unattributedRows,
     timeWindowedRows: total.sessions - unattributedRows,
