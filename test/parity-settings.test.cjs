@@ -14,13 +14,13 @@ test('Settings exposes representative selection, update checking and support lin
   assert.match(html, /representative/);
   assert.match(html, /checkForUpdates\(\)/);
   assert.match(html, /openExternal\(/);
-  assert.match(html, /https:\/\/github\.com\/MarkusSela\/PokeTokenBarWindows-Lab/);
+  assert.match(html, /https:\/\/github\.com\/MarkusSela\/PokeTokenBarWindows/);
   assert.match(main, /type === ["']check-update["']/);
   assert.match(main, /shell\.openExternal/);
 });
 
 test('update checking is a real read-only public release query', () => {
-  assert.match(releaseCheck, /api\.github\.com\/repos\/MarkusSela\/PokeTokenBarWindows-Lab\/releases\/latest/);
+  assert.match(releaseCheck, /api\.github\.com\/repos\/MarkusSela\/PokeTokenBarWindows\/releases\/latest/);
   assert.match(releaseCheck, /latestVersion|tag_name/);
   assert.match(preload, /openExternal/);
   assert.match(releaseCheck, /assets\.find/);

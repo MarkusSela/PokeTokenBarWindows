@@ -1,6 +1,6 @@
 # Security and privacy
 
-PokeTokenBar Windows Lab reads local usage information so it can show a companion and usage summary. It is designed not to modify provider data or send usage data to a remote service.
+PokeTokenBar Windows reads local usage information so it can show a companion and usage summary. It is designed not to modify provider data or send usage data to a remote service.
 
 ## Do not disclose private data
 

@@ -1,4 +1,4 @@
-# Contributing to PokeTokenBar Windows Lab
+# Contributing to PokeTokenBar Windows
 
 Thank you for helping improve the Windows companion. This repository is intentionally separate from the original [PokeTokenBar macOS project](https://github.com/chattymin/PokeTokenBar).
 

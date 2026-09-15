@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml/badge.svg" alt="Stato della build"></a>
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows-Lab?display_name=tag&label=release" alt="Ultima release"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml/badge.svg" alt="Stato della build"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows?display_name=tag&label=release" alt="Ultima release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="Licenza MIT"></a>
   <a href="https://ko-fi.com/marukoshi"><img src="https://img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Support on Ko-fi"></a>
 </p>
@@ -213,8 +213,8 @@ L'audit della release rifiuta percorsi assoluti personali, valori che sembrano c
 
 La release corrente è `v0.1.1`.
 
-1. Apri la [pagina Releases](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases).
-2. Scarica `PokeTokenBar-Windows-Lab-Setup-<version>.exe`.
+1. Apri la [pagina Releases](https://github.com/MarkusSela/PokeTokenBarWindows/releases).
+2. Scarica `PokeTokenBar-Windows-Setup-<version>.exe`.
 3. Verifica il valore SHA-256 con il file allegato `SHA256SUMS.txt`.
 4. Avvia l'installer. PokeTokenBar parte nell'area di notifica; clicca l'icona per aprire Home.
 
@@ -236,7 +236,7 @@ npm run audit:release
 npm run dist
 ```
 
-L'installer viene scritto in `dist/PokeTokenBar-Windows-Lab-Setup-<version>.exe`. L'applicazione non impacchettata viene scritta in `dist/win-unpacked/`.
+L'installer viene scritto in `dist/PokeTokenBar-Windows-Setup-<version>.exe`. L'applicazione non impacchettata viene scritta in `dist/win-unpacked/`.
 
 Per una verifica pulita, chiudi i processi PokeTokenBar precedenti prima di ricompilare. Il percorso normale di avvio resta basato sulla tray; l'apertura diagnostica è riservata al percorso di test documentato `PTB_OPEN=1`.
 
@@ -257,9 +257,9 @@ Inizia da [`CONTRIBUTING.md`](CONTRIBUTING.md) per il flusso di test locale.
 
 ## 🔗 Collegamenti
 
-- [Repository del progetto](https://github.com/MarkusSela/PokeTokenBarWindows-Lab)
-- [Release](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)
-- [Segnala un problema](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/issues/new)
+- [Repository del progetto](https://github.com/MarkusSela/PokeTokenBarWindows)
+- [Release](https://github.com/MarkusSela/PokeTokenBarWindows/releases)
+- [Segnala un problema](https://github.com/MarkusSela/PokeTokenBarWindows/issues/new)
 - [Progetto PokeTokenBar originale](https://github.com/chattymin/PokeTokenBar)
 
 ## 💛 Supporto

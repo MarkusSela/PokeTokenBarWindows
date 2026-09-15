@@ -3,15 +3,15 @@
   "version": "0.1.13",
   "desktopName": "com.poketokenbar.desktop",
   "description": "A local-first desktop companion that turns AI coding usage into Pokémon progress.",
-  "author": "PokeTokenBar Windows Lab contributors",
+  "author": "PokeTokenBar Windows contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MarkusSela/PokeTokenBarWindows-Lab.git"
+    "url": "https://github.com/MarkusSela/PokeTokenBarWindows.git"
   },
-  "homepage": "https://github.com/MarkusSela/PokeTokenBarWindows-Lab",
+  "homepage": "https://github.com/MarkusSela/PokeTokenBarWindows",
   "bugs": {
-    "url": "https://github.com/MarkusSela/PokeTokenBarWindows-Lab/issues"
+    "url": "https://github.com/MarkusSela/PokeTokenBarWindows/issues"
   },
   "main": "main.cjs",
   "scripts": {
@@ -60,7 +60,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "shortcutName": "PokeTokenBar Windows Lab",
-      "artifactName": "PokeTokenBar-Windows-Lab-Setup-${version}.exe"
+      "artifactName": "PokeTokenBar-Windows-Setup-${version}.exe"
     }
   }
 }

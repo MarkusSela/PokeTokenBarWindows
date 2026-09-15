@@ -1,6 +1,6 @@
 # Release checklist
 
-This document describes the controlled release process for `MarkusSela/PokeTokenBarWindows-Lab`.
+This document describes the controlled release process for `MarkusSela/PokeTokenBarWindows`.
 
 ## Release principles
 
@@ -38,7 +38,7 @@ npm run dist
 
 Expected outputs:
 
-- `dist/PokeTokenBar-Windows-Lab-Setup-0.1.13.exe`
+- `dist/PokeTokenBar-Windows-Setup-0.1.13.exe`
 - `dist/win-unpacked/`
 
 Verify the packaged output:
@@ -54,13 +54,13 @@ The packaged audit must finish with no findings. Inspect the package file list a
 In Git Bash:
 
 ```shell
-sha256sum dist/PokeTokenBar-Windows-Lab-Setup-0.1.13.exe > dist/SHA256SUMS.txt
+sha256sum dist/PokeTokenBar-Windows-Setup-0.1.13.exe > dist/SHA256SUMS.txt
 ```
 
 In PowerShell, the equivalent is:
 
 ```powershell
-(Get-FileHash .\\dist\\PokeTokenBar-Windows-Lab-Setup-0.1.13.exe -Algorithm SHA256).Hash
+(Get-FileHash .\\dist\\PokeTokenBar-Windows-Setup-0.1.13.exe -Algorithm SHA256).Hash
 ```
 
 Do not include a personal machine path in the checksum file.
@@ -83,11 +83,11 @@ Use synthetic fixture data for screenshots and restore or remove that profile be
 
 ## 6. Prepare the GitHub release
 
-Repository: <https://github.com/MarkusSela/PokeTokenBarWindows-Lab>
+Repository: <https://github.com/MarkusSela/PokeTokenBarWindows>
 
 Release assets:
 
-- `PokeTokenBar-Windows-Lab-Setup-0.1.13.exe`
+- `PokeTokenBar-Windows-Setup-0.1.13.exe`
 - `SHA256SUMS.txt`
 
 Release metadata:

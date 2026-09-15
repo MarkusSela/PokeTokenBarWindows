@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml/badge.svg" alt="빌드 상태"></a>
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows-Lab?display_name=tag&label=release" alt="최신 릴리스"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml/badge.svg" alt="빌드 상태"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows?display_name=tag&label=release" alt="최신 릴리스"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT 라이선스"></a>
   <a href="https://ko-fi.com/marukoshi"><img src="https://img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Support on Ko-fi"></a>
 </p>
@@ -213,8 +213,8 @@ PokeTokenBar는 로컬 데이터를 중심으로 설계되었습니다.
 
 현재 릴리스는 `v0.1.1`입니다.
 
-1. [Releases 페이지](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)를 엽니다.
-2. `PokeTokenBar-Windows-Lab-Setup-<version>.exe`를 다운로드합니다.
+1. [Releases 페이지](https://github.com/MarkusSela/PokeTokenBarWindows/releases)를 엽니다.
+2. `PokeTokenBar-Windows-Setup-<version>.exe`를 다운로드합니다.
 3. 첨부된 `SHA256SUMS.txt`로 SHA-256 값을 확인합니다.
 4. 설치 프로그램을 실행합니다. PokeTokenBar는 알림 영역에서 시작하며 아이콘을 클릭하면 Home이 열립니다.
 
@@ -236,7 +236,7 @@ npm run audit:release
 npm run dist
 ```
 
-설치 프로그램은 `dist/PokeTokenBar-Windows-Lab-Setup-<version>.exe`에 생성되고 압축이 풀린 애플리케이션은 `dist/win-unpacked/`에 생성됩니다.
+설치 프로그램은 `dist/PokeTokenBar-Windows-Setup-<version>.exe`에 생성되고 압축이 풀린 애플리케이션은 `dist/win-unpacked/`에 생성됩니다.
 
 깨끗하게 검증하려면 다시 빌드하기 전에 기존 PokeTokenBar 프로세스를 닫으세요. 일반 실행 경로는 계속 트레이 우선이며 진단용 실행은 문서화된 `PTB_OPEN=1` 테스트 경로에서만 사용합니다.
 
@@ -257,9 +257,9 @@ Issue와 Pull Request를 환영합니다. 다음을 지켜 주세요.
 
 ## 🔗 링크
 
-- [프로젝트 저장소](https://github.com/MarkusSela/PokeTokenBarWindows-Lab)
-- [릴리스](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)
-- [문제 신고](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/issues/new)
+- [프로젝트 저장소](https://github.com/MarkusSela/PokeTokenBarWindows)
+- [릴리스](https://github.com/MarkusSela/PokeTokenBarWindows/releases)
+- [문제 신고](https://github.com/MarkusSela/PokeTokenBarWindows/issues/new)
 - [원본 PokeTokenBar 프로젝트](https://github.com/chattymin/PokeTokenBar)
 
 ## 💛 후원

@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml/badge.svg" alt="构建状态"></a>
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows-Lab?display_name=tag&label=release" alt="最新版本"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml/badge.svg" alt="构建状态"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows?display_name=tag&label=release" alt="最新版本"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT 许可证"></a>
   <a href="https://ko-fi.com/marukoshi"><img src="https://img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Support on Ko-fi"></a>
 </p>
@@ -213,8 +213,8 @@ PokeTokenBar 围绕本地数据设计：
 
 当前版本为 `v0.1.1`。
 
-1. 打开 [Releases 页面](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)。
-2. 下载 `PokeTokenBar-Windows-Lab-Setup-<version>.exe`。
+1. 打开 [Releases 页面](https://github.com/MarkusSela/PokeTokenBarWindows/releases)。
+2. 下载 `PokeTokenBar-Windows-Setup-<version>.exe`。
 3. 使用随附的 `SHA256SUMS.txt` 验证 SHA-256 值。
 4. 运行安装程序。PokeTokenBar 会启动在通知区域；点击其图标即可打开 Home。
 
@@ -236,7 +236,7 @@ npm run audit:release
 npm run dist
 ```
 
-安装程序会写入 `dist/PokeTokenBar-Windows-Lab-Setup-<version>.exe`，解包后的应用会写入 `dist/win-unpacked/`。
+安装程序会写入 `dist/PokeTokenBar-Windows-Setup-<version>.exe`，解包后的应用会写入 `dist/win-unpacked/`。
 
 为了进行干净的验证，重新构建前请关闭之前的 PokeTokenBar 进程。正常启动路径保持以托盘为先；诊断启动仅用于文档化的 `PTB_OPEN=1` 测试路径。
 
@@ -257,9 +257,9 @@ npm run dist
 
 ## 🔗 链接
 
-- [项目仓库](https://github.com/MarkusSela/PokeTokenBarWindows-Lab)
-- [Releases](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)
-- [报告问题](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/issues/new)
+- [项目仓库](https://github.com/MarkusSela/PokeTokenBarWindows)
+- [Releases](https://github.com/MarkusSela/PokeTokenBarWindows/releases)
+- [报告问题](https://github.com/MarkusSela/PokeTokenBarWindows/issues/new)
 - [原始 PokeTokenBar 项目](https://github.com/chattymin/PokeTokenBar)
 
 ## 💛 支持

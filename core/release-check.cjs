@@ -1,4 +1,4 @@
-const RELEASE_URL = 'https://api.github.com/repos/MarkusSela/PokeTokenBarWindows-Lab/releases/latest';
+const RELEASE_URL = 'https://api.github.com/repos/MarkusSela/PokeTokenBarWindows/releases/latest';
 
 function versionParts(value) {
   const match = String(value || '').trim().replace(/^v/i, '').match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
@@ -26,7 +26,7 @@ async function checkLatestRelease({
   platform = process.platform,
   fetcher = globalThis.fetch,
   releaseUrl = RELEASE_URL,
-  userAgent = 'PokeTokenBarWindows-Lab',
+  userAgent = 'PokeTokenBarWindows',
 } = {}) {
   if (typeof fetcher !== 'function')
     return {
@@ -44,7 +44,7 @@ async function checkLatestRelease({
     const response = await fetcher(releaseUrl, {
       headers: {
         accept: 'application/vnd.github+json',
-        'user-agent': String(userAgent || 'PokeTokenBarWindows-Lab').slice(0, 128),
+        'user-agent': String(userAgent || 'PokeTokenBarWindows').slice(0, 128),
       },
       signal: typeof AbortSignal?.timeout === 'function' ? AbortSignal.timeout(8_000) : undefined,
     });

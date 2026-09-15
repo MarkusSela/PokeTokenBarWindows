@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/actions/workflows/ci.yml/badge.svg" alt="Build status"></a>
-  <a href="https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows-Lab?display_name=tag&label=release" alt="Latest release"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml"><img src="https://github.com/MarkusSela/PokeTokenBarWindows/actions/workflows/ci.yml/badge.svg" alt="Build status"></a>
+  <a href="https://github.com/MarkusSela/PokeTokenBarWindows/releases"><img src="https://img.shields.io/github/v/release/MarkusSela/PokeTokenBarWindows?display_name=tag&label=release" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT license"></a>
   <a href="https://ko-fi.com/marukoshi"><img src="https://img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Support on Ko-fi"></a>
 </p>
@@ -225,8 +225,8 @@ The release audit rejects personal absolute paths, credential-looking values, lo
 
 The current release is `v0.1.13`.
 
-1. Open the [Releases page](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases).
-2. Download `PokeTokenBar-Windows-Lab-Setup-<version>.exe`.
+1. Open the [Releases page](https://github.com/MarkusSela/PokeTokenBarWindows/releases).
+2. Download `PokeTokenBar-Windows-Setup-<version>.exe`.
 3. Verify the SHA-256 value with the attached `SHA256SUMS.txt`.
 4. Run the installer. PokeTokenBar starts in the notification area; click its icon to open Home.
 
@@ -248,7 +248,7 @@ npm run audit:release
 npm run dist
 ```
 
-The installer is written to `dist/PokeTokenBar-Windows-Lab-Setup-<version>.exe`. The unpacked application is written to `dist/win-unpacked/`.
+The installer is written to `dist/PokeTokenBar-Windows-Setup-<version>.exe`. The unpacked application is written to `dist/win-unpacked/`.
 
 For a clean verification run, close previous PokeTokenBar processes before rebuilding. The normal launch path stays tray-first; diagnostic opening is reserved for the documented `PTB_OPEN=1` test path.
 
@@ -265,9 +265,9 @@ Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for the local test workflow.
 
 ## 🔗 Links
 
-- [Project repository](https://github.com/MarkusSela/PokeTokenBarWindows-Lab)
-- [Releases](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/releases)
-- [Report an issue](https://github.com/MarkusSela/PokeTokenBarWindows-Lab/issues/new)
+- [Project repository](https://github.com/MarkusSela/PokeTokenBarWindows)
+- [Releases](https://github.com/MarkusSela/PokeTokenBarWindows/releases)
+- [Report an issue](https://github.com/MarkusSela/PokeTokenBarWindows/issues/new)
 - [Original PokeTokenBar project](https://github.com/chattymin/PokeTokenBar)
 
 ## 💛 Support

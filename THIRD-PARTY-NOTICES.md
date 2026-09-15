@@ -1,6 +1,6 @@
 # Third-party notices
 
-PokeTokenBar Windows Lab includes or uses the following third-party projects and services. Their own licenses and terms remain applicable.
+PokeTokenBar Windows includes or uses the following third-party projects and services. Their own licenses and terms remain applicable.
 
 ## Original PokeTokenBar project
 
