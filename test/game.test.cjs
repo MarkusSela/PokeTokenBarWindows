@@ -52,6 +52,35 @@ test('wallet spending never decreases lifetime progression', () => {
   assert.equal(game.state.usedSinceInstall, 600_000_000);
 });
 
+test('master wallet edit changes spendable balance only when unlocked and enabled', () => {
+  const game = Game.fresh({ rng: () => 0 });
+  game.state.usedSinceInstall = 600_000_000;
+  game.state.spentTokens = 100_000_000;
+  assert.equal(game.setSpendableWallet(123_456_789), false);
+  game.state.settings.masterModeUnlocked = true;
+  game.state.settings.masterTokenEdit = true;
+  assert.equal(game.setSpendableWallet(123_456_789), true);
+  assert.equal(game.wallet, 123_456_789);
+  assert.equal(game.state.spentTokens, 100_000_000);
+});
+
+test('master test-shop credits are spendable for Shop purchases without changing the real wallet', () => {
+  const game = new Game({
+    state: {
+      spentTokens: 100,
+      usedSinceInstall: 100,
+      settings: { masterModeUnlocked: true },
+    },
+  });
+  assert.equal(game.addTestShopTokens(1_000_000_000), true);
+  assert.equal(game.wallet, 1_000_000_000);
+  assert.equal(game.testShopTokens, 1_000_000_000);
+  assert.equal(game.state.spentTokens, 100);
+  assert.equal(game.buyItem('rareCandy'), true);
+  assert.equal(game.testShopTokens, 500_000_000);
+  assert.equal(game.state.spentTokens, 100);
+});
+
 test('phase thresholds add up to the original graduation total', () => {
   for (const rarity of ['common', 'uncommon', 'rare', 'legendary']) {
     const forms = 3;
@@ -71,6 +100,62 @@ test('rare candy modifies only active progress and never Hermes lifetime usage',
   assert.equal(game.state.active.usedAtStage, BALANCE.rareCandy.xp);
 });
 
+test('Exp. Candy XL adds its configured progress without changing Hermes usage', () => {
+  const game = new Game({
+    state: {
+      usedSinceInstall: 2_000_000_000,
+      active: {
+        baseId: 1,
+        pathIds: [1, 2, 3],
+        plannedPathIds: [1, 2, 3],
+        stageIndex: 2,
+        usedAtStage: 0,
+        rarity: 'common',
+        totalForms: 3,
+      },
+    },
+  });
+  assert.equal(game.buyItem('expCandyXL'), true);
+  assert.equal(game.itemCount('expCandyXL'), 1);
+  assert.equal(game.useExpCandyXL(), true);
+  assert.equal(game.itemCount('expCandyXL'), 0);
+  assert.equal(game.state.active.usedAtStage, BALANCE.expCandyXL.progress);
+  assert.equal(game.state.usedSinceInstall, 2_000_000_000);
+  assert.equal(game.state.spentTokens, BALANCE.expCandyXL.price);
+});
+
+test('Hatch Incubator arms once and is consumed only by the next actual hatch', () => {
+  const game = Game.fresh({
+    rng: () => 0,
+    state: { inventory: { hatchIncubator: 1 } },
+  });
+  assert.equal(game.activateHatchIncubator(), true);
+  assert.equal(game.itemCount('hatchIncubator'), 1);
+  assert.equal(game.hatchThreshold(), BALANCE.eggHatch / 2);
+  game.applyUsage(BALANCE.eggHatch / 2);
+  assert.ok(game.state.active);
+  assert.equal(game.itemCount('hatchIncubator'), 0);
+  assert.equal(game.state.nextHatchModifiers.hatchIncubator, false);
+});
+
+test('Shiny Incense is consumable and stacks with Shiny Charm for one hatch', () => {
+  const game = new Game({
+    rng: () => 0.03,
+    state: { inventory: { shinyIncense: 1, shinyCharm: 1 } },
+    catalog: [{
+      id: 1,
+      captureRate: 255,
+      line: { baseId: 1, pathIds: [1], rarity: 'common', names: { 1: 'Bulbasaur' } },
+    }],
+  });
+  assert.equal(game.activateShinyIncense(), true);
+  assert.equal(game.itemCount('shinyIncense'), 1);
+  assert.equal(game.hatchLine({ baseId: 1, pathIds: [1], rarity: 'common', names: { 1: 'Bulbasaur' } }), true);
+  assert.equal(game.state.active.shiny, true);
+  assert.equal(game.itemCount('shinyIncense'), 0);
+  assert.equal(game.state.nextHatchModifiers.shinyIncense, false);
+});
+
 test('fresh egg discards an active companion without adding it to the Pokédex', () => {
   const game = Game.fresh();
   game.state.active = { baseId: 1, pathIds: [1], plannedPathIds: [1], stageIndex: 0, usedAtStage: 0, rarity: 'common', totalForms: 1 };
@@ -79,6 +164,18 @@ test('fresh egg discards an active companion without adding it to the Pokédex',
   assert.equal(game.state.active, null);
   assert.equal(game.state.dex.length, 0);
   assert.equal(game.state.eggUsage, 0);
+});
+
+test('egg tier filtering uses the evolution-line rarity, not the stage rarity', () => {
+  const game = new Game({
+    state: { eggTier: 'uncommon' },
+    catalog: [
+      { id: 1, captureRate: 30, rarity: 'common', line: { baseId: 1, pathIds: [1, 2, 3], rarity: 'common' } },
+      { id: 4, captureRate: 120, rarity: 'uncommon', line: { baseId: 4, pathIds: [4, 5], rarity: 'uncommon' } },
+      { id: 7, captureRate: 45, rarity: 'rare', line: { baseId: 7, pathIds: [7, 8, 9], rarity: 'rare' } },
+    ],
+  });
+  assert.deepEqual(game.eggPool().map((entry) => entry.id), [4, 7]);
 });
 
 test('provider totals credit only new Hermes usage and do not double count refreshes', () => {
@@ -212,7 +309,7 @@ test('Poké Doll can be bought for 250M and armed for the next hatch', () => {
   assert.equal(game.buyItem('pokeDoll'), true);
   assert.equal(game.itemCount('pokeDoll'), 1);
   assert.equal(game.activatePokeDoll(), true);
-  assert.equal(game.itemCount('pokeDoll'), 0);
+  assert.equal(game.itemCount('pokeDoll'), 1, 'the doll stays in the Bag until it blocks a duplicate');
   assert.equal(game.state.pokeDollActive, true);
 });
 
@@ -221,7 +318,7 @@ test('Poké Doll can be armed for the initial free egg even without an explicit 
     state: { inventory: { pokeDoll: 1 }, active: null, eggTier: null, eggUsage: 0 },
   });
   assert.equal(game.activatePokeDoll(), true);
-  assert.equal(game.itemCount('pokeDoll'), 0);
+  assert.equal(game.itemCount('pokeDoll'), 1);
   assert.equal(game.state.pokeDollActive, true);
 });
 
@@ -272,7 +369,7 @@ test('Poké Doll allows a shiny hatch of a species already in the Pokédex', () 
   assert.equal(game.hatch(), true);
   assert.equal(game.state.active.baseId, 4);
   assert.equal(game.state.active.shiny, true);
-  assert.equal(game.state.pokeDollActive, false);
+  assert.equal(game.state.pokeDollActive, true, 'a shiny duplicate consumes nothing: the doll stays armed');
 });
 
 test('Poké Doll recognizes legacy Pokédex records without chainOrder', () => {

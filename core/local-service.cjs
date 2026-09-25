@@ -7,7 +7,7 @@ const {
   eggProgress,
   eggTokensToHatch,
 } = require('./game.cjs');
-const { buildCatchLogEntries, buildPokedexEntries } = require('./catch-log.cjs');
+const { buildCatchLogEntries, buildPokedexEntries, speciesTotal } = require('./catch-log.cjs');
 const { loadState, saveState } = require('./state-store.cjs');
 const { readHermesUsage } = require('./hermes-usage.cjs');
 const { readLocalProviderUsage } = require('./provider-usage.cjs');
@@ -16,7 +16,10 @@ const { LiveUsageDisplay } = require('./live-usage.cjs');
 const { normalizeLimitWindows } = require('./provider-limits.cjs');
 const { buildCapabilities, actionAllowed } = require('./capabilities.cjs');
 const { normalizeSettings } = require('./settings.cjs');
+const { loadShippedCatalogDocument } = require('./pokeapi.cjs');
+const { buildSpriteSnapshot } = require('./sprite-snapshot.cjs');
 const { checkLatestRelease } = require('./release-check.cjs');
+const { registerCheckNow } = require('./master-mode.cjs');
 const {
   pathForPlatform,
   resolvePlatformPaths,
@@ -41,6 +44,7 @@ const WEB_SETTING_KEYS = new Set([
   'language',
   'refreshMinutes',
   'limitDisplay',
+  'spriteStyle',
   'launchAtLogin',
   'menuTodayTokens',
   'menuTodayCost',
@@ -48,6 +52,8 @@ const WEB_SETTING_KEYS = new Set([
   'updateNotifications',
   'providerStatus',
   'keychainOptOut',
+  'masterPokedexAll',
+  'masterTokenEdit',
 ]);
 
 function number(value) {
@@ -119,16 +125,10 @@ function activeName(game, active) {
   const id = active.pathIds?.[active.stageIndex];
   const value = active.names?.[id];
   const names = typeof value === 'string' ? { en: value, it: value } : value || {};
-  const language = game.state.settings.language === 'it' ? 'it' : 'en';
-  return names[language] || names.en || names.it || `#${id}`;
+  return names.en || names.it || `#${id}`;
 }
 
-function spriteUrl(active) {
-  if (!active) return null;
-  const id = active.pathIds?.[active.stageIndex];
-  const shiny = Boolean((active.shiny && !active.dittoDisguise) || active.dittoRevealed);
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${shiny ? 'shiny/' : ''}${id}.gif`;
-}
+
 
 function representativeSnapshot(game) {
   const subject = game.representativeSubject?.();
@@ -217,6 +217,7 @@ function createLocalService({
   trayAvailable = false,
   notificationAvailable = false,
   overlayAvailable,
+  qa = false,
   releaseChecker = () => checkLatestRelease({ currentVersion: packageVersion }),
   onBackgroundRefresh = null,
   backgroundRefreshDelayMs = DEFAULT_BACKGROUND_REFRESH_DELAY_MS,
@@ -232,10 +233,15 @@ function createLocalService({
     trayAvailable,
     notificationAvailable,
     overlayAvailable,
+    qa,
   });
   const initialState = state ?? loadState(stateFile);
   const gameOptions = { state: initialState, rng, now };
-  if (catalog !== undefined) gameOptions.catalog = catalog;
+  if (catalog !== undefined)
+    gameOptions.catalog = Array.isArray(catalog) ? catalog : (catalog?.lines || []);
+  const spriteCatalog = !Array.isArray(catalog) && catalog?.schemaVersion === 2
+    ? catalog
+    : loadShippedCatalogDocument();
   const game = new Game(gameOptions);
   let liveUsageDisplay = new LiveUsageDisplay(game.state.liveUsageDisplay);
   const readHermes = hermesReader || ((date) => readHermesUsage(
@@ -253,6 +259,7 @@ function createLocalService({
   let persistenceTail = Promise.resolve();
   let persistenceKick = null;
   let persistencePending = false;
+  let masterModeCheckClicks = 0;
 
   function currentDate() {
     const value = now();
@@ -262,7 +269,25 @@ function createLocalService({
 
   function rawSnapshot(usage = lastUsage, error = null) {
     const active = game.state.active;
+    const collection = {
+      pokedex: buildPokedexEntries({ active, dex: game.state.dex, catalog: spriteCatalog, masterMode: game.state.settings.masterModeUnlocked && game.state.settings.masterPokedexAll }),
+      catchLog: buildCatchLogEntries({ active, dex: game.state.dex }),
+      total: speciesTotal(spriteCatalog),
+    };
     const representative = representativeSnapshot(game);
+    const spriteCandidates = buildSpriteSnapshot({
+      catalog: spriteCatalog,
+      active,
+      representative,
+      collection,
+      style: game.state.settings.spriteStyle,
+      offline: false,
+    });
+    if (representative && spriteCandidates.representative)
+      Object.assign(representative, {
+        sprite: spriteCandidates.representative.candidates[0]?.src || null,
+        spriteCandidates: spriteCandidates.representative.candidates,
+      });
     const raw = {
       mode,
       readOnly,
@@ -271,6 +296,7 @@ function createLocalService({
       settings: game.state.settings,
       lastRefreshAt,
       wallet: game.wallet,
+      testShopTokens: game.testShopTokens,
       balance: BALANCE,
       active: active
         ? {
@@ -280,19 +306,20 @@ function createLocalService({
           shinyVisible: Boolean((active.shiny && !active.dittoDisguise) || active.dittoRevealed),
         }
         : null,
-      collection: {
-        pokedex: buildPokedexEntries({ active, dex: game.state.dex }),
-        catchLog: buildCatchLogEntries({ active, dex: game.state.dex }),
-      },
+      collection,
       representative,
+      spriteCandidates,
       egg: {
-        progress: eggProgress(game.state.eggUsage),
-        remaining: eggTokensToHatch(game.state.eggUsage),
+        progress: eggProgress(game.state.eggUsage, game.hatchThreshold()),
+        remaining: eggTokensToHatch(game.state.eggUsage, game.hatchThreshold()),
+        threshold: game.hatchThreshold(),
         tier: game.state.eggTier,
+        incubating: !game.state.active,
         sprite: 'assets/emerald-egg-static.png',
         animatedSprite: 'assets/emerald-egg.webp',
       },
-      sprite: spriteUrl(active),
+      // Backwards-compatible scalar, derived from the same resolver output.
+      sprite: spriteCandidates.active?.candidates[0]?.src || null,
       usage: usage || {},
       limits: {
         officialAvailable: Boolean(usage?.officialAvailable),
@@ -397,7 +424,20 @@ function createLocalService({
     if (type === 'snapshot') return { ok: true, snapshot: await (lastSnapshot || safeSnapshot()) };
     if (type === 'refresh') return { ok: true, snapshot: await refresh() };
     if (type === 'check-update') {
-      return { ok: true, update: await releaseChecker(), snapshot: safeSnapshot() };
+      let masterMode = {
+        unlocked: Boolean(game.state.settings.masterModeUnlocked),
+        justUnlocked: false,
+        clicks: masterModeCheckClicks,
+      };
+      if (!readOnly) {
+        masterMode = registerCheckNow(game.state.settings, masterModeCheckClicks);
+        masterModeCheckClicks = masterMode.clicks;
+        if (masterMode.justUnlocked) {
+          game.updateSetting('masterModeUnlocked', true);
+          if (persist) writeState(stateFile, game.state);
+        }
+      }
+      return { ok: true, update: await releaseChecker(), masterMode, snapshot: safeSnapshot() };
     }
     if (type === 'export-save') {
       return { ok: true, save: cloneExportState(game.state), snapshot: safeSnapshot() };
@@ -405,11 +445,25 @@ function createLocalService({
     let ok = false;
     if (type === 'buy') ok = game.buyItem(typeof value === 'string' ? value : '');
     if (type === 'candy') ok = game.useRareCandy();
+    if (type === 'candy-xl') ok = game.useExpCandyXL();
+    if (type === 'hatch-incubator') ok = game.activateHatchIncubator();
+    if (type === 'shiny-incense') ok = game.activateShinyIncense();
     if (type === 'mint') ok = game.useMint();
     if (type === 'egg') ok = game.buyEgg(value == null ? null : value);
+    if (type === 'master-set-wallet') ok = qa && game.setSpendableWallet(value);
+    if (type === 'add-test-shop-tokens') ok = game.addTestShopTokens(value);
+    if (type === 'master-mode-off') {
+      ok = game.disableMasterMode();
+      masterModeCheckClicks = 0;
+    }
     if ((type === 'setting' || type === 'setting-live') && value && typeof value === 'object') {
       const key = typeof value.key === 'string' ? value.key : '';
-      if (WEB_SETTING_KEYS.has(key)) {
+      if (
+        key !== 'masterModeUnlocked' &&
+        (!['masterPokedexAll', 'masterTokenEdit'].includes(key) ||
+          (game.state.settings.masterModeUnlocked && (key !== 'masterTokenEdit' || qa))) &&
+        WEB_SETTING_KEYS.has(key)
+      ) {
         game.updateSetting(key, value.value);
         ok = true;
       }
@@ -453,8 +507,8 @@ function createLocalService({
     }
     if (type === 'grant-one-time' && value && typeof value.key === 'string')
       ok = game.grantOneTimeProgress(value.key, Number(value.delta));
-    if (ok && persist && type !== 'candy') writeState(stateFile, game.state);
-    if (type === 'candy' && ok) {
+    if (ok && persist && !['candy', 'candy-xl'].includes(type)) writeState(stateFile, game.state);
+    if (['candy', 'candy-xl'].includes(type) && ok) {
       const snapshot = safeSnapshot();
       lastSnapshot = snapshot;
       if (persist) scheduleDeferredPersistence();

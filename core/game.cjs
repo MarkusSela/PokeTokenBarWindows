@@ -1,4 +1,7 @@
 const { booleanValue, normalizeSettings } = require("./settings.cjs");
+const { classifyRarity } = require("./rarity.cjs");
+const { setSpendableWallet: setMasterSpendableWallet } = require("./master-mode.cjs");
+const RARITY_RANKS = Object.freeze({ common: 0, uncommon: 1, rare: 2, legendary: 3 });
 
 const BALANCE = Object.freeze({
   eggHatch: 5_000_000,
@@ -17,6 +20,9 @@ const BALANCE = Object.freeze({
   shinyCharm: Object.freeze({ price: 3_000_000_000, denominator: 48 }),
   freshEgg: Object.freeze({ price: 1_000_000_000 }),
   pokeDoll: Object.freeze({ price: 250_000_000 }),
+  expCandyXL: Object.freeze({ progress: 250_000_000, price: 1_000_000_000 }),
+  hatchIncubator: Object.freeze({ price: 250_000_000, multiplier: 0.5 }),
+  shinyIncense: Object.freeze({ price: 1_500_000_000, denominator: 32, denominatorWithCharm: 24 }),
 });
 const NATURES = Object.freeze([
   "Hardy",
@@ -58,11 +64,12 @@ const DEFAULT_CATALOG = Object.freeze([
   },
 ]);
 
-function rarity({ captureRate, legendary = false, mythical = false }) {
-  if (legendary || mythical) return "legendary";
-  if (captureRate <= 45) return "rare";
-  if (captureRate <= 120) return "uncommon";
-  return "common";
+function rarity(source, override) {
+  return classifyRarity(source, override);
+}
+function lineRarity(line) {
+  const value = line?.rarity;
+  return Object.prototype.hasOwnProperty.call(RARITY_RANKS, value) ? value : "common";
 }
 function phaseThreshold(rarityName, totalForms, stageIndex) {
   const k = Math.max(1, totalForms);
@@ -73,11 +80,15 @@ function phaseThreshold(rarityName, totalForms, stageIndex) {
 function normalizedEggUsage(value) {
   return Math.max(0, Number(value) || 0);
 }
-function eggProgress(usage) {
-  return Math.min(1, normalizedEggUsage(usage) / BALANCE.eggHatch);
+function normalizedEggThreshold(value) {
+  const threshold = Number(value);
+  return Number.isFinite(threshold) && threshold > 0 ? threshold : BALANCE.eggHatch;
 }
-function eggTokensToHatch(usage) {
-  return Math.max(0, BALANCE.eggHatch - normalizedEggUsage(usage));
+function eggProgress(usage, threshold = BALANCE.eggHatch) {
+  return Math.min(1, normalizedEggUsage(usage) / normalizedEggThreshold(threshold));
+}
+function eggTokensToHatch(usage, threshold = BALANCE.eggHatch) {
+  return Math.max(0, normalizedEggThreshold(threshold) - normalizedEggUsage(usage));
 }
 function emptyState() {
   return {
@@ -87,6 +98,7 @@ function emptyState() {
     spentTokens: 0,
     eggUsage: 0,
     eggTier: null,
+    nextHatchModifiers: { hatchIncubator: false, shinyIncense: false },
     pendingHatchId: null,
     pokeDollActive: false,
     claimedTodayTokensByProvider: null,
@@ -215,10 +227,25 @@ function normalizedNumberMap(value) {
 }
 function normalizedInventory(value) {
   const out = {};
-  for (const kind of ["rareCandy", "mint", "shinyCharm", "pokeDoll"])
+  for (const kind of [
+    "rareCandy",
+    "mint",
+    "shinyCharm",
+    "pokeDoll",
+    "expCandyXL",
+    "hatchIncubator",
+    "shinyIncense",
+  ])
     if (Object.prototype.hasOwnProperty.call(record(value), kind))
       out[kind] = integer(nonNegative(value[kind]));
   return out;
+}
+function normalizedHatchModifiers(value) {
+  const source = record(value);
+  return {
+    hatchIncubator: booleanValue(source.hatchIncubator),
+    shinyIncense: booleanValue(source.shinyIncense),
+  };
 }
 function normalizedMetrics(value) {
   const metrics = ["tokens", "cost", "input", "output", "cacheRead", "cacheWrite", "reasoning"];
@@ -243,6 +270,7 @@ function normalizeState(value) {
   out.eggTier = [null, "common", "uncommon", "rare"].includes(source.eggTier)
     ? source.eggTier
     : null;
+  out.nextHatchModifiers = normalizedHatchModifiers(source.nextHatchModifiers);
   out.pendingHatchId = source.pendingHatchId == null ? null : String(source.pendingHatchId);
   out.pokeDollActive = booleanValue(source.pokeDollActive);
   out.claimedTodayTokensByProvider = source.claimedTodayTokensByProvider == null
@@ -295,14 +323,31 @@ class Game {
     this.now = now;
     this.catalog = catalog;
     this.state = normalizeState(state);
+    this.testShopTokens = 0;
   }
   get wallet() {
-    return Math.max(0, this.state.usedSinceInstall - this.state.spentTokens);
+    return Math.max(0, this.state.usedSinceInstall - this.state.spentTokens) + this.testShopTokens;
   }
   itemCount(kind) {
     if (!Object.prototype.hasOwnProperty.call(this.state.inventory, kind)) return 0;
     const count = Number(this.state.inventory[kind]);
     return Number.isFinite(count) && count >= 0 ? Math.floor(count) : 0;
+  }
+  hatchThreshold() {
+    return Math.max(
+      1,
+      Math.round(
+        BALANCE.eggHatch *
+          (this.state.nextHatchModifiers.hatchIncubator ? BALANCE.hatchIncubator.multiplier : 1),
+      ),
+    );
+  }
+  shinyDenominator() {
+    if (this.state.nextHatchModifiers.shinyIncense)
+      return this.itemCount("shinyCharm")
+        ? BALANCE.shinyIncense.denominatorWithCharm
+        : BALANCE.shinyIncense.denominator;
+    return this.itemCount("shinyCharm") ? BALANCE.shinyCharm.denominator : 64;
   }
   setCatalog(catalog) {
     this.catalog = catalog;
@@ -313,6 +358,37 @@ class Game {
       [key]: value,
     });
     return this.state.settings;
+  }
+  setSpendableWallet(value) {
+    const result = setMasterSpendableWallet(this.state, value);
+    if (!result.ok) return false;
+    this.state.usedSinceInstall = result.state.usedSinceInstall;
+    this.state.spentTokens = result.state.spentTokens;
+    return true;
+  }
+  disableMasterMode() {
+    this.state.settings = normalizeSettings({
+      ...this.state.settings,
+      masterModeUnlocked: false,
+      masterPokedexAll: false,
+      masterTokenEdit: false,
+    });
+    // I crediti di prova sono di sessione: spegnendo la modalità non devono restare nel portafoglio.
+    this.testShopTokens = 0;
+    return this.state.settings.masterModeUnlocked === false;
+  }
+  addTestShopTokens(value) {
+    if (!this.state.settings.masterModeUnlocked) return false;
+    const amount = Math.floor(Number(value));
+    if (!Number.isFinite(amount) || amount <= 0 || amount > Number.MAX_SAFE_INTEGER) return false;
+    this.testShopTokens += amount;
+    return true;
+  }
+  spendTokens(value) {
+    const amount = Math.max(0, Math.floor(Number(value) || 0));
+    const testSpend = Math.min(this.testShopTokens, amount);
+    this.testShopTokens -= testSpend;
+    this.state.spentTokens += amount - testSpend;
   }
   representativeSubject() {
     const id = this.state.representativeSpeciesId;
@@ -533,16 +609,15 @@ class Game {
     this.state.usedSinceInstall += delta;
     if (!this.state.active) {
       this.state.eggUsage += delta;
-      if (this.state.eggUsage >= BALANCE.eggHatch && this.catalog.length)
+      if (this.state.eggUsage >= this.hatchThreshold() && this.catalog.length)
         this.hatch();
     } else this.applyUsageToActive(delta);
   }
   eggPool() {
+    const minimumRank = this.state.eggTier == null ? null : RARITY_RANKS[this.state.eggTier];
     return this.catalog.filter(
       (x) =>
-        !this.state.eggTier ||
-        x.captureRate <=
-          ({ uncommon: 120, rare: 45 }[this.state.eggTier] ?? 255),
+        minimumRank == null || RARITY_RANKS[lineRarity(x.line ?? x)] >= minimumRank,
     );
   }
   hasDexSpecies(id) {
@@ -563,9 +638,12 @@ class Game {
   shouldAvoidPokeDollDuplicates(isShiny) {
     return Boolean(this.state.pokeDollActive && !isShiny);
   }
+  // Vero solo se nel pool c'e' almeno una linea gia' posseduta: senza questo, il Poké Doll non ha evitato nulla.
+  hasOwnedPoolCandidate() {
+    return this.eggPool().some((entry) => this.hasDexSpecies(entry.id));
+  }
   rollShiny() {
-    return this.rng() <
-      1 / (this.itemCount("shinyCharm") ? BALANCE.shinyCharm.denominator : 64);
+    return this.rng() < 1 / this.shinyDenominator();
   }
   chooseBase({ avoidOwned = false } = {}) {
     const pool = this.eggPool();
@@ -605,8 +683,8 @@ class Game {
   }
   hatchLine(line, options = {}) {
     const tier = this.state.eggTier;
-    const ranks = { common: 0, uncommon: 1, rare: 2, legendary: 3 };
-    if (tier && ranks[line.rarity] < ranks[tier]) return false;
+    const selectedLineRarity = lineRarity(line);
+    if (tier && RARITY_RANKS[selectedLineRarity] < RARITY_RANKS[tier]) return false;
     const overflow = Math.max(0, this.state.eggUsage - BALANCE.eggHatch);
     const plan = line.pathIds?.length ? line.pathIds : [line.baseId];
     const isShiny =
@@ -620,7 +698,7 @@ class Game {
       return false;
     const nature = NATURES[Math.floor(this.rng() * NATURES.length)];
     const disguise =
-      line.rarity === "common" && plan.length >= 2 && this.rng() < 1 / 128
+      selectedLineRarity === "common" && plan.length >= 2 && this.rng() < 1 / 128
         ? line.baseId
         : null;
     this.state.active = {
@@ -629,7 +707,7 @@ class Game {
       plannedPathIds: plan,
       stageIndex: 0,
       usedAtStage: 0,
-      rarity: line.rarity,
+      rarity: selectedLineRarity,
       totalForms: plan.length,
       shiny: isShiny,
       nature,
@@ -637,9 +715,21 @@ class Game {
       dittoDisguise: disguise,
       dittoRevealed: false,
     };
+    if (this.state.nextHatchModifiers.hatchIncubator)
+      this.state.inventory.hatchIncubator = Math.max(0, this.itemCount("hatchIncubator") - 1);
+    if (this.state.nextHatchModifiers.shinyIncense)
+      this.state.inventory.shinyIncense = Math.max(0, this.itemCount("shinyIncense") - 1);
+    this.state.nextHatchModifiers = { hatchIncubator: false, shinyIncense: false };
+    if (this.state.pokeDollActive && !isShiny && this.hasOwnedPoolCandidate()) {
+      // Protezione realmente usata: la linea posseduta e' stata esclusa.
+      this.state.inventory.pokeDoll = Math.max(
+        0,
+        this.itemCount("pokeDoll") - 1,
+      );
+      this.state.pokeDollActive = false;
+    }
     this.state.eggUsage = 0;
     this.state.eggTier = null;
-    this.state.pokeDollActive = false;
     if (overflow) this.applyUsageToActive(overflow);
     return true;
   }
@@ -709,6 +799,9 @@ class Game {
       mint: BALANCE.mint,
       shinyCharm: BALANCE.shinyCharm,
       pokeDoll: BALANCE.pokeDoll,
+      expCandyXL: BALANCE.expCandyXL,
+      hatchIncubator: BALANCE.hatchIncubator,
+      shinyIncense: BALANCE.shinyIncense,
     };
     const item = Object.prototype.hasOwnProperty.call(items, kind) ? items[kind] : null;
     if (
@@ -717,7 +810,7 @@ class Game {
       (kind === "shinyCharm" && this.itemCount(kind))
     )
       return false;
-    this.state.spentTokens += item.price;
+    this.spendTokens(item.price);
     this.state.inventory[kind] = this.itemCount(kind) + 1;
     return true;
   }
@@ -728,7 +821,7 @@ class Game {
       !this.itemCount("pokeDoll")
     )
       return false;
-    this.state.inventory.pokeDoll--;
+    // La scorta resta in Borsa: il Poké Doll si consuma solo quando evita davvero un duplicato.
     this.state.pokeDollActive = true;
     return true;
   }
@@ -736,6 +829,32 @@ class Game {
     if (!this.state.active || !this.itemCount("rareCandy")) return false;
     this.state.inventory.rareCandy--;
     this.applyUsageToActive(BALANCE.rareCandy.xp);
+    return true;
+  }
+  useExpCandyXL() {
+    if (!this.state.active || !this.itemCount("expCandyXL")) return false;
+    this.state.inventory.expCandyXL--;
+    this.applyUsageToActive(BALANCE.expCandyXL.progress);
+    return true;
+  }
+  activateHatchIncubator() {
+    if (
+      this.state.active ||
+      this.state.nextHatchModifiers.hatchIncubator ||
+      !this.itemCount("hatchIncubator")
+    )
+      return false;
+    this.state.nextHatchModifiers.hatchIncubator = true;
+    return true;
+  }
+  activateShinyIncense() {
+    if (
+      this.state.active ||
+      this.state.nextHatchModifiers.shinyIncense ||
+      !this.itemCount("shinyIncense")
+    )
+      return false;
+    this.state.nextHatchModifiers.shinyIncense = true;
     return true;
   }
   useMint() {
@@ -753,7 +872,7 @@ class Game {
         : 1,
       price = Math.round(BALANCE.freshEgg.price * multiplier);
     if (this.wallet < price) return false;
-    this.state.spentTokens += price;
+    this.spendTokens(price);
     this.state.active = null;
     this.state.eggUsage = 0;
     // A purchased basic egg is still a purchased egg: keep an explicit
@@ -787,6 +906,7 @@ module.exports = {
   BALANCE,
   NATURES,
   rarity,
+  lineRarity,
   phaseThreshold,
   eggProgress,
   eggTokensToHatch,

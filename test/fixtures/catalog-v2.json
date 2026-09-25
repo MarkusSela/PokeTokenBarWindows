@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 2,
+  "catalogVersion": "c0a81336a335eba3932f27f5a5c4027dc5bcb47c550177f44cc453162c3fa757",
+  "source": {
+    "provider": "fixture",
+    "snapshot": "catalog-v2-fixture-1",
+    "revision": "synthetic",
+    "generations": [1, 5, 6, 9],
+    "provenance": "synthetic fixture; no public API response is embedded"
+  },
+  "lines": [
+    {
+      "id": 1,
+      "captureRate": 45,
+      "rarity": "rare",
+      "line": {
+        "baseId": 1,
+        "pathOptions": [[1, 2, 3]],
+        "pathIds": [1, 2, 3],
+        "rarity": "rare",
+        "names": {
+          "1": {"en": "Bulbasaur", "it": "Bulbasaur"},
+          "2": {"en": "Ivysaur", "it": "Ivysaur"},
+          "3": {"en": "Venusaur", "it": "Venusaur"}
+        },
+        "captureRate": 45
+      }
+    },
+    {
+      "id": 56,
+      "captureRate": 190,
+      "rarity": "common",
+      "line": {
+        "baseId": 56,
+        "pathOptions": [[56, 57, 979]],
+        "pathIds": [56, 57, 979],
+        "rarity": "common",
+        "names": {
+          "56": {"en": "Mankey", "it": "Mankey"},
+          "57": {"en": "Primeape", "it": "Primeape"},
+          "979": {"en": "Annihilape", "it": "Annihilape"}
+        },
+        "captureRate": 190
+      }
+    },
+    {
+      "id": 133,
+      "captureRate": 45,
+      "rarity": "rare",
+      "line": {
+        "baseId": 133,
+        "pathOptions": [[133, 134], [133, 135]],
+        "pathIds": [133, 134],
+        "rarity": "rare",
+        "names": {
+          "133": {"en": "Eevee", "it": "Eevee"},
+          "134": {"en": "Vaporeon", "it": "Vaporeon"},
+          "135": {"en": "Jolteon", "it": "Jolteon"}
+        },
+        "captureRate": 45
+      }
+    },
+    {
+      "id": 501,
+      "captureRate": 45,
+      "rarity": "rare",
+      "line": {
+        "baseId": 501,
+        "pathOptions": [[501, 502, 503]],
+        "pathIds": [501, 502, 503],
+        "rarity": "rare",
+        "names": {
+          "501": {"en": "Oshawott", "it": "Oshawott"},
+          "502": {"en": "Dewott", "it": "Dewott"},
+          "503": {"en": "Samurott", "it": "Samurott"}
+        },
+        "captureRate": 45
+      }
+    },
+    {
+      "id": 650,
+      "captureRate": 45,
+      "rarity": "rare",
+      "line": {
+        "baseId": 650,
+        "pathOptions": [[650, 651, 652]],
+        "pathIds": [650, 651, 652],
+        "rarity": "rare",
+        "names": {
+          "650": {"en": "Chespin", "it": "Chespin"},
+          "651": {"en": "Quilladin", "it": "Quilladin"},
+          "652": {"en": "Chesnaught", "it": "Chesnaught"}
+        },
+        "captureRate": 45
+      }
+    },
+    {
+      "id": 906,
+      "captureRate": 45,
+      "rarity": "rare",
+      "line": {
+        "baseId": 906,
+        "pathOptions": [[906, 907, 908]],
+        "pathIds": [906, 907, 908],
+        "rarity": "rare",
+        "names": {
+          "906": {"en": "Sprigatito", "it": "Sprigatito"},
+          "907": {"en": "Floragato", "it": "Floragato"},
+          "908": {"en": "Meowscarada", "it": "Meowscarada"}
+        },
+        "captureRate": 45
+      }
+    }
+  ],
+  "species": {
+    "1": {"id": 1, "generation": 1, "names": {"en": "Bulbasaur", "it": "Bulbasaur"}, "variantKeys": ["pokemon:1"], "defaultVariantKey": "pokemon:1", "captureRate": 45, "legendary": false, "mythical": false},
+    "2": {"id": 2, "generation": 1, "names": {"en": "Ivysaur", "it": "Ivysaur"}, "variantKeys": ["pokemon:2"], "defaultVariantKey": "pokemon:2", "captureRate": 45, "legendary": false, "mythical": false},
+    "3": {"id": 3, "generation": 1, "names": {"en": "Venusaur", "it": "Venusaur"}, "variantKeys": ["pokemon:3"], "defaultVariantKey": "pokemon:3", "captureRate": 45, "legendary": false, "mythical": false},
+    "56": {"id": 56, "generation": 1, "names": {"en": "Mankey", "it": "Mankey"}, "variantKeys": ["pokemon:56"], "defaultVariantKey": "pokemon:56", "captureRate": 190, "legendary": false, "mythical": false},
+    "57": {"id": 57, "generation": 1, "names": {"en": "Primeape", "it": "Primeape"}, "variantKeys": ["pokemon:57"], "defaultVariantKey": "pokemon:57", "captureRate": 75, "legendary": false, "mythical": false},
+    "979": {"id": 979, "generation": 9, "names": {"en": "Annihilape", "it": "Annihilape"}, "variantKeys": ["pokemon:979"], "defaultVariantKey": "pokemon:979", "captureRate": 45, "legendary": false, "mythical": false},
+    "133": {"id": 133, "generation": 1, "names": {"en": "Eevee", "it": "Eevee"}, "variantKeys": ["pokemon:133", "pokemon:10001"], "defaultVariantKey": "pokemon:133", "captureRate": 45, "legendary": false, "mythical": false},
+    "134": {"id": 134, "generation": 1, "names": {"en": "Vaporeon", "it": "Vaporeon"}, "variantKeys": ["pokemon:134"], "defaultVariantKey": "pokemon:134", "captureRate": 45, "legendary": false, "mythical": false},
+    "135": {"id": 135, "generation": 1, "names": {"en": "Jolteon", "it": "Jolteon"}, "variantKeys": ["pokemon:135"], "defaultVariantKey": "pokemon:135", "captureRate": 45, "legendary": false, "mythical": false},
+    "501": {"id": 501, "generation": 5, "names": {"en": "Oshawott", "it": "Oshawott"}, "variantKeys": ["pokemon:501"], "defaultVariantKey": "pokemon:501", "captureRate": 45, "legendary": false, "mythical": false},
+    "502": {"id": 502, "generation": 5, "names": {"en": "Dewott", "it": "Dewott"}, "variantKeys": ["pokemon:502"], "defaultVariantKey": "pokemon:502", "captureRate": 45, "legendary": false, "mythical": false},
+    "503": {"id": 503, "generation": 5, "names": {"en": "Samurott", "it": "Samurott"}, "variantKeys": ["pokemon:503"], "defaultVariantKey": "pokemon:503", "captureRate": 45, "legendary": false, "mythical": false},
+    "650": {"id": 650, "generation": 6, "names": {"en": "Chespin", "it": "Chespin"}, "variantKeys": ["pokemon:650"], "defaultVariantKey": "pokemon:650", "captureRate": 45, "legendary": false, "mythical": false},
+    "651": {"id": 651, "generation": 6, "names": {"en": "Quilladin", "it": "Quilladin"}, "variantKeys": ["pokemon:651"], "defaultVariantKey": "pokemon:651", "captureRate": 45, "legendary": false, "mythical": false},
+    "652": {"id": 652, "generation": 6, "names": {"en": "Chesnaught", "it": "Chesnaught"}, "variantKeys": ["pokemon:652"], "defaultVariantKey": "pokemon:652", "captureRate": 45, "legendary": false, "mythical": false},
+    "906": {"id": 906, "generation": 9, "names": {"en": "Sprigatito", "it": "Sprigatito"}, "variantKeys": ["pokemon:906"], "defaultVariantKey": "pokemon:906", "captureRate": 45, "legendary": false, "mythical": false},
+    "907": {"id": 907, "generation": 9, "names": {"en": "Floragato", "it": "Floragato"}, "variantKeys": ["pokemon:907"], "defaultVariantKey": "pokemon:907", "captureRate": 45, "legendary": false, "mythical": false},
+    "908": {"id": 908, "generation": 9, "names": {"en": "Meowscarada", "it": "Meowscarada"}, "variantKeys": ["pokemon:908"], "defaultVariantKey": "pokemon:908", "captureRate": 45, "legendary": false, "mythical": false},
+    "132": {"id": 132, "generation": 1, "names": {"en": "Ditto", "it": "Ditto"}, "variantKeys": ["pokemon:132"], "defaultVariantKey": "pokemon:132", "captureRate": 35, "legendary": false, "mythical": false}
+  },
+  "variants": {
+    "pokemon:1": {"id": 1, "speciesId": 1, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png", "localPath": "sprites/fixture/pokeapi-1.png", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "licenseRef": "fixture-synthetic"}], "shiny": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/1.png", "localPath": "sprites/fixture/pokeapi-1-shiny.png", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "licenseRef": "fixture-synthetic"}]}},
+    "pokemon:2": {"id": 2, "speciesId": 2, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png", "localPath": "sprites/fixture/pokeapi-2.png", "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:3": {"id": 3, "speciesId": 3, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png", "localPath": "sprites/fixture/pokeapi-3.png", "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:56": {"id": 56, "speciesId": 56, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "pixel-gen5", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/56.png", "localPath": "sprites/fixture/gen5-56.png", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:57": {"id": 57, "speciesId": 57, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/57.png", "localPath": "sprites/fixture/pokeapi-57.png", "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "licenseRef": "fixture-synthetic"}], "shiny": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/57.png", "localPath": "sprites/fixture/pokeapi-57-shiny.png", "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "licenseRef": "fixture-synthetic"}]}},
+    "pokemon:979": {"id": 979, "speciesId": 979, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/979.png", "localPath": "sprites/fixture/pokeapi-979.png", "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "licenseRef": "fixture-synthetic"}], "shiny": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/979.png", "localPath": "sprites/fixture/pokeapi-979-shiny.png", "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "licenseRef": "fixture-synthetic"}]}},
+    "pokemon:133": {"id": 133, "speciesId": 133, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "pixel-gen5", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/133.png", "localPath": "sprites/fixture/gen5-133.png", "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "licenseRef": "fixture-synthetic"}], "shiny": [{"provider": "pokeapi", "style": "pixel-gen5", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/shiny/133.png", "localPath": "sprites/fixture/gen5-133-shiny.png", "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "licenseRef": "fixture-synthetic"}]}},
+    "pokemon:10001": {"id": 10001, "speciesId": 133, "isDefault": false, "formKey": "alolan", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10001.png", "localPath": "sprites/fixture/pokeapi-10001.png", "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:134": {"id": 134, "speciesId": 134, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/134.png", "localPath": "sprites/fixture/pokeapi-134.png", "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:135": {"id": 135, "speciesId": 135, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/135.png", "localPath": "sprites/fixture/pokeapi-135.png", "sha256": "4444444444444444444444444444444444444444444444444444444444444444", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:501": {"id": 501, "speciesId": 501, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/501.png", "localPath": "sprites/fixture/pokeapi-501.png", "sha256": "5555555555555555555555555555555555555555555555555555555555555555", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:502": {"id": 502, "speciesId": 502, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/502.png", "localPath": "sprites/fixture/pokeapi-502.png", "sha256": "6666666666666666666666666666666666666666666666666666666666666666", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:503": {"id": 503, "speciesId": 503, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/503.png", "localPath": "sprites/fixture/pokeapi-503.png", "sha256": "7777777777777777777777777777777777777777777777777777777777777777", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:650": {"id": 650, "speciesId": 650, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/650.png", "localPath": "sprites/fixture/pokeapi-650.png", "sha256": "8888888888888888888888888888888888888888888888888888888888888888", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:651": {"id": 651, "speciesId": 651, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/651.png", "localPath": "sprites/fixture/pokeapi-651.png", "sha256": "9999999999999999999999999999999999999999999999999999999999999999", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:652": {"id": 652, "speciesId": 652, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/652.png", "localPath": "sprites/fixture/pokeapi-652.png", "sha256": "abababababababababababababababababababababababababababababababab", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:906": {"id": 906, "speciesId": 906, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/906.png", "localPath": "sprites/fixture/pokeapi-906.png", "sha256": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:907": {"id": 907, "speciesId": 907, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/907.png", "localPath": "sprites/fixture/pokeapi-907.png", "sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:908": {"id": 908, "speciesId": 908, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/908.png", "localPath": "sprites/fixture/pokeapi-908.png", "sha256": "dededededededededededededededededededededededededededededededede", "licenseRef": "fixture-synthetic"}], "shiny": []}},
+    "pokemon:132": {"id": 132, "speciesId": 132, "isDefault": true, "formKey": "default", "sprites": {"normal": [{"provider": "pokeapi", "style": "auto", "animated": false, "sourceUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/132.png", "localPath": "sprites/fixture/pokeapi-132.png", "sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef", "licenseRef": "fixture-synthetic"}], "shiny": []}}
+  }
+}

@@ -1,145 +1,220 @@
-const fs = require("fs");
-const path = require("path");
-const API = "https://pokeapi.co/api/v2";
-const GRAPHQL = "https://graphql.pokeapi.co/v1beta2";
-const SHIPPED_CATALOG = path.join(
-  __dirname,
-  "..",
-  "assets",
-  "pokemon-catalog-gen1-5.json",
-);
-function cacheRead(file, ttl) {
+const fs = require('node:fs');
+const path = require('node:path');
+const { classifyPokeApiSpecies } = require('./rarity.cjs');
+const { SCHEMA_VERSION, validateCatalogDocument } = require('./catalog-contract.cjs');
+
+const API = 'https://pokeapi.co/api/v2';
+const GRAPHQL = 'https://graphql.pokeapi.co/v1beta2';
+const SHIPPED_CATALOG = path.join(__dirname, '..', 'assets', 'pokemon-catalog.json');
+const LEGACY_SHIPPED_CATALOG = path.join(__dirname, '..', 'assets', 'pokemon-catalog-gen1-5.json');
+const CACHE_TTL_MS = 30 * 864e5;
+
+function cacheRead(file, ttl, schemaVersion, catalogVersion) {
   try {
-    const v = JSON.parse(fs.readFileSync(file, "utf8"));
-    return Date.now() - v.fetchedAt < ttl ? v.value : null;
+    const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (
+      value.schemaVersion !== schemaVersion ||
+      value.catalogVersion !== catalogVersion ||
+      !Number.isFinite(Number(value.fetchedAt)) ||
+      Date.now() - Number(value.fetchedAt) >= ttl ||
+      !Array.isArray(value.value)
+    ) return null;
+    return value.value;
   } catch {
     return null;
   }
 }
+
 function cacheWrite(file, value) {
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify({ fetchedAt: Date.now(), value }));
-}
-function shippedCatalog() {
   try {
-    const rows = JSON.parse(fs.readFileSync(SHIPPED_CATALOG, "utf8"));
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function readLegacyCatalog() {
+  try {
+    const rows = JSON.parse(fs.readFileSync(LEGACY_SHIPPED_CATALOG, 'utf8'));
     return Array.isArray(rows) ? rows : [];
   } catch {
     return [];
   }
 }
+
+function loadShippedCatalogDocument() {
+  let value;
+  try {
+    value = JSON.parse(fs.readFileSync(SHIPPED_CATALOG, 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw new Error(`Invalid shipped catalog: ${error.message}`);
+  }
+  try {
+    validateCatalogDocument(value);
+  } catch (error) {
+    throw new Error(`Invalid shipped catalog: ${error.message}`);
+  }
+  return value;
+}
+
+function shippedCatalog() {
+  const document = loadShippedCatalogDocument();
+  return document ? document.lines : readLegacyCatalog();
+}
+
 function loadShippedCatalog() {
   return shippedCatalog();
 }
+
 async function json(url, options = {}) {
   const response = await fetch(url, {
     ...options,
-    headers: { "user-agent": "PokeTokenBar/0.1.0", ...(options.headers || {}) },
+    headers: { 'user-agent': 'PokeTokenBar/0.1.0', ...(options.headers || {}) },
     signal: AbortSignal.timeout(15000),
   });
   if (!response.ok) throw new Error(`PokéAPI ${response.status}`);
   return response.json();
 }
+
+function numericId(url, label) {
+  const id = Number(String(url || '').split('/').filter(Boolean).at(-1));
+  if (!Number.isInteger(id) || id < 1) throw new Error(`Invalid ${label} URL: ${url}`);
+  return id;
+}
+
 function node(link) {
-  const id = Number(String(link.species.url).split("/").filter(Boolean).at(-1));
-  if (id < 1 || id > 649) return null;
-  return { id, children: (link.evolves_to || []).map(node).filter(Boolean) };
+  if (!link?.species || typeof link.species.url !== 'string')
+    throw new Error('PokéAPI evolution node missing species URL');
+  const id = numericId(link.species.url, 'evolution species');
+  const children = Array.isArray(link.evolves_to) ? link.evolves_to : [];
+  return { id, children: children.map(node) };
 }
+
 function paths(root) {
+  if (!root || !Number.isInteger(root.id) || !Array.isArray(root.children))
+    throw new Error('PokéAPI evolution chain is empty or invalid');
   if (!root.children.length) return [[root.id]];
-  return root.children.flatMap((c) => paths(c).map((p) => [root.id, ...p]));
+  return root.children.flatMap((child) => paths(child).map((pathIds) => [root.id, ...pathIds]));
 }
+
 class PokeApi {
   constructor(cacheDir) {
     this.cacheDir = cacheDir;
     this.lines = new Map();
-    this.shipped = shippedCatalog();
+    this.document = loadShippedCatalogDocument();
+    this.shipped = this.document ? this.document.lines : readLegacyCatalog();
+    this.catalogVersion = this.document?.catalogVersion || 'legacy-catalog';
   }
-  async baseIndex() {
-    const file = path.join(this.cacheDir, "base-index.json");
-    const cached = cacheRead(file, 30 * 864e5);
-    if (cached?.length) return cached;
-    const shipped = this.shipped.map((row) => ({
+
+  indexRows() {
+    return this.shipped.map((row) => ({
       id: row.id,
       captureRate: row.captureRate,
       line: row.line,
     }));
+  }
+
+  async baseIndex() {
+    const file = path.join(this.cacheDir, 'base-index.json');
+    const cached = cacheRead(file, CACHE_TTL_MS, SCHEMA_VERSION, this.catalogVersion);
+    if (cached?.length) return cached;
+    const shipped = this.indexRows();
     if (shipped.length) {
-      cacheWrite(file, shipped);
+      cacheWrite(file, {
+        fetchedAt: Date.now(),
+        schemaVersion: SCHEMA_VERSION,
+        catalogVersion: this.catalogVersion,
+        value: shipped,
+      });
       return shipped;
     }
     const result = [];
     const list = await json(`${API}/evolution-chain?limit=1000`);
+    if (!Array.isArray(list.results)) throw new Error('PokéAPI evolution-chain index invalid');
     for (const item of list.results) {
       const chain = await json(item.url);
-      const id = Number(
-        String(chain.chain.species.url).split("/").filter(Boolean).at(-1),
-      );
-      if (id >= 1 && id <= 649 && id !== 132) {
-        const species = await json(`${API}/pokemon-species/${id}`);
-        result.push({ id, captureRate: species.capture_rate });
+      if (!chain?.chain) throw new Error('PokéAPI evolution chain missing chain root');
+      const root = node(chain.chain);
+      if (root.id !== 132) {
+        const species = await json(`${API}/pokemon-species/${root.id}`);
+        result.push({ id: root.id, captureRate: species.capture_rate });
       }
     }
     result.sort((a, b) => a.id - b.id);
-    if (!result.length) throw new Error("PokéAPI index empty");
-    cacheWrite(file, result);
+    if (!result.length) throw new Error('PokéAPI index empty');
+    cacheWrite(file, {
+      fetchedAt: Date.now(),
+      schemaVersion: SCHEMA_VERSION,
+      catalogVersion: this.catalogVersion,
+      value: result,
+    });
     return result;
   }
+
   async line(baseId) {
-    if (this.lines.has(baseId)) return this.lines.get(baseId);
-    const local = this.shipped.find((row) => row.id === Number(baseId))?.line;
+    const numericBaseId = Number(baseId);
+    if (this.lines.has(numericBaseId)) return this.lines.get(numericBaseId);
+    const local = this.shipped.find((row) => row.id === numericBaseId)?.line;
     if (local) {
-      this.lines.set(baseId, local);
+      this.lines.set(numericBaseId, local);
       return local;
     }
-    const species = await json(`${API}/pokemon-species/${baseId}`);
+    const species = await json(`${API}/pokemon-species/${numericBaseId}`);
+    if (!species?.evolution_chain?.url)
+      throw new Error(`PokéAPI species ${numericBaseId} is missing an evolution chain`);
     const chain = await json(species.evolution_chain.url);
+    if (!chain?.chain) throw new Error(`PokéAPI species ${numericBaseId} returned an empty evolution chain`);
     const root = node(chain.chain);
-    const ids = [...new Set(paths(root).flat())];
-    const speciesRows = await Promise.all(
-      ids.map((id) => json(`${API}/pokemon-species/${id}`)),
-    );
+    const pathOptions = paths(root);
+    const ids = [...new Set(pathOptions.flat())];
+    const speciesRows = await Promise.all(ids.map((id) => json(`${API}/pokemon-species/${id}`)));
     const names = {};
-    for (let i = 0; i < ids.length; i++) {
+    for (let index = 0; index < ids.length; index += 1) {
       const translated = Object.fromEntries(
-        speciesRows[i].names
-          .filter((n) => ["it", "en"].includes(n.language.name))
-          .map((n) => [n.language.name, n.name]),
+        (Array.isArray(speciesRows[index].names) ? speciesRows[index].names : [])
+          .filter((entry) => ['it', 'en'].includes(entry.language?.name))
+          .map((entry) => [entry.language.name, entry.name]),
       );
-      names[ids[i]] = {
-        en: translated.en || `#${ids[i]}`,
-        it: translated.it || translated.en || `#${ids[i]}`,
+      names[ids[index]] = {
+        en: translated.en || `#${ids[index]}`,
+        it: translated.it || translated.en || `#${ids[index]}`,
       };
     }
-    const rarity =
-      species.is_legendary || species.is_mythical
-        ? "legendary"
-        : species.capture_rate <= 45
-          ? "rare"
-          : species.capture_rate <= 120
-            ? "uncommon"
-            : "common";
+    const rarity = classifyPokeApiSpecies(species);
     const value = {
-      baseId,
-      pathOptions: paths(root),
-      pathIds: paths(root)[0],
+      baseId: numericBaseId,
+      pathOptions,
+      pathIds: pathOptions[0],
       rarity,
       names,
       captureRate: species.capture_rate,
     };
-    this.lines.set(baseId, value);
+    this.lines.set(numericBaseId, value);
     return value;
   }
 }
+
 function choosePath(line, collectedFinals, rng = Math.random) {
-  const weight = (p) =>
-    collectedFinals.includes(`${line.baseId}:${p.at(-1)}`) ? 1 : 2;
-  const total = line.pathOptions.reduce((n, p) => n + weight(p), 0);
+  const weight = (candidate) => collectedFinals.includes(`${line.baseId}:${candidate.at(-1)}`) ? 1 : 2;
+  const total = line.pathOptions.reduce((sum, candidate) => sum + weight(candidate), 0);
   let x = rng() * total;
-  for (const p of line.pathOptions) {
-    x -= weight(p);
-    if (x < 0) return { ...line, pathIds: p };
+  for (const candidate of line.pathOptions) {
+    x -= weight(candidate);
+    if (x < 0) return { ...line, pathIds: candidate };
   }
   return { ...line, pathIds: line.pathOptions.at(-1) };
 }
-module.exports = { PokeApi, choosePath, loadShippedCatalog };
+
+module.exports = {
+  PokeApi,
+  choosePath,
+  loadShippedCatalog,
+  loadShippedCatalogDocument,
+  cacheRead,
+  cacheWrite,
+  node,
+  paths,
+};

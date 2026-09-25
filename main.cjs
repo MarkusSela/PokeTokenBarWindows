@@ -17,6 +17,41 @@ app.setAppUserModelId(
 );
 const path = require("path");
 const {
+  formatTrayTooltip,
+  normalizeQaRunId,
+} = require("./core/tray-identity.cjs");
+const configuredTestUserData = String(process.env.PTB_TEST_USER_DATA || "").trim();
+const testProfile = Boolean(configuredTestUserData);
+const testProfileId = testProfile
+  ? normalizeQaRunId(path.basename(path.resolve(configuredTestUserData)))
+  : null;
+if (testProfile) {
+  const testUserData = path.resolve(configuredTestUserData);
+  const insideTestProfile = (candidate) => {
+    const relative = path.relative(testUserData, path.resolve(candidate));
+    return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== "..");
+  };
+  const requestedStateFile = process.env.PTB_STATE_FILE
+    ? path.resolve(process.env.PTB_STATE_FILE)
+    : path.join(testUserData, "companion-state.json");
+  const requestedHermesHome = process.env.HERMES_HOME
+    ? path.resolve(process.env.HERMES_HOME)
+    : path.join(testUserData, "hermes-source");
+  if (!insideTestProfile(requestedStateFile))
+    throw new Error("PTB_STATE_FILE must be inside PTB_TEST_USER_DATA");
+  if (!insideTestProfile(requestedHermesHome))
+    throw new Error("HERMES_HOME must be inside PTB_TEST_USER_DATA");
+  app.setPath("userData", testUserData);
+  app.setName("PokeTokenBar Windows Lab QA");
+  app.setAppUserModelId("com.poketokenbar.windows.lab.qa");
+  process.env.PTB_STATE_FILE = requestedStateFile;
+  process.env.HERMES_HOME = requestedHermesHome;
+  process.env.USERPROFILE = testUserData;
+  process.env.HOME = testUserData;
+  process.env.APPDATA = path.join(testUserData, "appdata");
+  process.env.LOCALAPPDATA = path.join(testUserData, "localappdata");
+}
+const {
   Game,
   BALANCE,
   phaseThreshold,
@@ -30,7 +65,9 @@ const { readLocalProviderUsage } = require("./core/provider-usage.cjs");
 const { scanAdditionalFolders } = require("./core/local-scan.cjs");
 const { LiveUsageDisplay } = require("./core/live-usage.cjs");
 const { normalizeLimitWindows } = require("./core/provider-limits.cjs");
-const { PokeApi, choosePath } = require("./core/pokeapi.cjs");
+const { PokeApi, choosePath, loadShippedCatalogDocument } = require("./core/pokeapi.cjs");
+const { buildCatchLogEntries, buildPokedexEntries, speciesTotal } = require("./core/catch-log.cjs");
+const { buildSpriteSnapshot } = require("./core/sprite-snapshot.cjs");
 const { placePopoverBounds } = require("./core/popover-placement.cjs");
 const {
   createFloatingPetController,
@@ -45,6 +82,8 @@ const {
 const { buildCapabilities } = require("./core/capabilities.cjs");
 const { checkLatestRelease: checkLatestReleaseForPlatform } = require("./core/release-check.cjs");
 const { syncAutostart } = require("./core/linux-autostart.cjs");
+const { registerCheckNow } = require("./core/master-mode.cjs");
+const { ownedSpeciesIds, duplicateHatchSuffix } = require("./core/hatch-feedback.cjs");
 let win,
   tray,
   petWin,
@@ -58,6 +97,7 @@ let win,
   lastRefreshAt = 0,
   lastUsage = null,
   liveUsageDisplay = null,
+  masterModeCheckClicks = 0,
   popoverHeight = 600;
 const POPOVER_WIDTH = 360;
 const CANDY_BACKGROUND_REFRESH_DELAY_MS = 250;
@@ -67,6 +107,7 @@ const desktopCapabilities = buildCapabilities({
   mode: "desktop-local",
   platform: process.platform,
   env: process.env,
+  qa: testProfile,
   notificationAvailable: Notification.isSupported?.() !== false,
 });
 const isPrimaryInstance = app.requestSingleInstanceLock();
@@ -75,6 +116,7 @@ const LAB_DATA_DIR = "PokeTokenBarWindows-Lab";
 function stateFile() {
   if (isLinuxPlatform)
     return resolveCompanionStateFilePath({ platform: "linux", env: process.env });
+  if (testProfile) return process.env.PTB_STATE_FILE;
   return resolveCompanionStateFilePath({
     platform: "win32",
     env: process.env,
@@ -90,12 +132,43 @@ function syncLinuxAutostart() {
     enabled: Boolean(game?.state?.settings?.launchAtLogin),
   });
 }
-let game, api;
+let game, api, spriteCatalog;
+function shippedSpriteCatalog() {
+  spriteCatalog ??= loadShippedCatalogDocument();
+  return spriteCatalog;
+}
+function visibleCollection() {
+  const active = game.state.active;
+  const catalog = shippedSpriteCatalog();
+  return {
+    pokedex: buildPokedexEntries({
+      active,
+      dex: game.state.dex,
+      catalog,
+      masterMode: game.state.settings.masterModeUnlocked && game.state.settings.masterPokedexAll,
+    }),
+    catchLog: buildCatchLogEntries({ active, dex: game.state.dex }),
+    total: speciesTotal(catalog),
+  };
+}
+function currentSpriteSnapshot() {
+  return buildSpriteSnapshot({
+    catalog: shippedSpriteCatalog(),
+    active: game.state.active,
+    representative: representative(),
+    collection: visibleCollection(),
+    style: game.state.settings.spriteStyle,
+    offline: false,
+  });
+}
 function icon() {
   const runtimePath = app.isPackaged
     ? path.join(process.resourcesPath, "app-icon.png")
     : path.join(__dirname, "assets", "app-icon.png");
-  const image = nativeImage.createFromPath(runtimePath);
+  const selectedPath = testProfile
+    ? path.join(__dirname, "assets", "app-icon-qa.png")
+    : runtimePath;
+  const image = nativeImage.createFromPath(selectedPath);
   return image.isEmpty() ? nativeImage.createEmpty() : image;
 }
 function save() {
@@ -106,8 +179,7 @@ function activeName(a) {
   const value = a?.names?.[id];
   const names =
     typeof value === "string" ? { en: value, it: value } : value || {};
-  const preferred = game?.state?.settings?.language === "it" ? "it" : "en";
-  return names[preferred] || names.en || names.it || (a ? `#${id}` : null);
+  return names.en || names.it || (a ? `#${id}` : null);
 }
 function representative() {
   const pinned = game?.representativeSubject?.();
@@ -125,16 +197,9 @@ function petFollowsActive() {
   const p = representative();
   return !p || p.id === a.pathIds?.[a.stageIndex];
 }
-function spriteUrl(a) {
-  return a
-    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${(a.shiny && !a.dittoDisguise) || a.dittoRevealed ? "shiny/" : ""}${a.pathIds[a.stageIndex]}.gif`
-    : null;
-}
-function representativeSprite() {
+function representativeSnapshot() {
   const p = representative();
-  return p
-    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${p.shiny ? "shiny/" : ""}${p.id}.gif`
-    : null;
+  return p ? { ...p } : null;
 }
 function compact(value) {
   const n = Number(value || 0);
@@ -179,11 +244,12 @@ function updateTrayTooltip(usage) {
     parts.push(`$${Number(usage.today.cost).toFixed(2)}`);
   const p = representative(),
     name = p?.name || activeName(game.state.active);
-  tray.setToolTip(
-    parts.length
-      ? `PokeTokenBar — ${name ? `${name} · ` : ""}${parts.join(" · ")}`
-      : `PokeTokenBar${name ? ` — ${name}` : ""}`,
-  );
+  tray.setToolTip(formatTrayTooltip({
+    qa: testProfile,
+    runId: testProfileId,
+    name,
+    parts,
+  }));
 }
 async function checkLatestRelease() {
   return checkLatestReleaseForPlatform({
@@ -197,10 +263,7 @@ function validExternalUrl(value) {
     return ["https:", "http:", "mailto:"].includes(url.protocol) ? url.href : null;
   } catch { return null; }
 }
-function representativeSnapshot() {
-  const p = representative();
-  return p ? { ...p, sprite: representativeSprite() } : null;
-}
+
 function mergeUsage(base, extra) {
   const add = (a, b) => ({
     tokens: (a?.tokens || 0) + (b?.tokens || 0),
@@ -262,6 +325,14 @@ function snapshot(extra = {}) {
   const limitWindows = normalizeLimitWindows(
     extra.usage?.limitWindows ?? lastUsage?.limitWindows,
   );
+  const collection = visibleCollection();
+  const spriteCandidates = currentSpriteSnapshot();
+  const representativeValue = representativeSnapshot();
+  if (representativeValue && spriteCandidates.representative)
+    Object.assign(representativeValue, {
+      sprite: spriteCandidates.representative.candidates[0]?.src || null,
+      spriteCandidates: spriteCandidates.representative.candidates,
+    });
   return {
     mode: "desktop-local",
     readOnly: false,
@@ -272,6 +343,7 @@ function snapshot(extra = {}) {
     settings: game.state.settings,
     lastRefreshAt,
     wallet: game.wallet,
+    testShopTokens: game.testShopTokens,
     balance: BALANCE,
     active: a
       ? {
@@ -283,16 +355,20 @@ function snapshot(extra = {}) {
           ),
         }
       : null,
-    representative: representativeSnapshot(),
+    collection,
+    representative: representativeValue,
+    spriteCandidates,
     egg: {
-      progress: eggProgress(game.state.eggUsage),
-      remaining: eggTokensToHatch(game.state.eggUsage),
+      progress: eggProgress(game.state.eggUsage, game.hatchThreshold()),
+      remaining: eggTokensToHatch(game.state.eggUsage, game.hatchThreshold()),
+      threshold: game.hatchThreshold(),
       tier: game.state.eggTier,
       incubating: !game.state.active,
       sprite: "assets/emerald-egg-static.png",
       animatedSprite: "assets/emerald-egg.webp",
     },
-    sprite: spriteUrl(a),
+    // Kept for existing renderer consumers; its value comes from the resolver.
+    sprite: spriteCandidates.active?.candidates[0]?.src || null,
     limits: {
       officialAvailable: Boolean(extra.usage?.officialAvailable),
       windows: limitWindows,
@@ -307,15 +383,24 @@ function companionProgressBefore() {
       ? { ...active, pathIds: [...(active.pathIds || [])] }
       : null,
     dexLength: Array.isArray(game.state.dex) ? game.state.dex.length : 0,
+    ownedIds: ownedSpeciesIds(game.state),
+    pokeDollActive: Boolean(game.state.pokeDollActive),
   };
 }
 function companionNotice(before) {
   const after = game.state.active;
   const italian = game.state.settings.language === "it";
   if (!before.active && after)
-    return italian
-      ? `Si è schiuso ${activeName(after)}!`
-      : `${activeName(after)} hatched!`;
+    return (
+      (italian ? `Si è schiuso ${activeName(after)}!` : `${activeName(after)} hatched!`) +
+      duplicateHatchSuffix({
+        hatchedBaseId: after.baseId,
+        ownedIds: before.ownedIds,
+        pokeDollWasActive: before.pokeDollActive,
+        pokeDollConsumed: Boolean(before.pokeDollActive && !game.state.pokeDollActive),
+        italian,
+      })
+    );
   if (
     before.active &&
     after &&
@@ -394,7 +479,7 @@ async function refresh(effect = null) {
         "PokeTokenBar",
         `Limit reward: ${grants.reduce((sum, item) => sum + item.count, 0)} Rare Candy`,
       );
-    if (!game.state.active && game.state.eggUsage >= BALANCE.eggHatch) {
+    if (!game.state.active && game.state.eggUsage >= game.hatchThreshold()) {
       api ??= new PokeApi(path.join(app.getPath("userData"), "pokeapi-cache"));
       game.setCatalog(await api.baseIndex());
       const isShiny = game.rollShiny();
@@ -527,7 +612,7 @@ function createWindow() {
     win.webContents.send("popover-opened");
   });
   win.on("blur", () => {
-    if (!desktopCapabilities.tray) return;
+    if (!desktopCapabilities.tray || diagnosticOpen) return;
     clearTimeout(blurTimer);
     blurTimer = setTimeout(() => {
       if (!win || win.isDestroyed()) return;
@@ -586,9 +671,13 @@ function placeFloatingPet() {
 function petData() {
   const p = representative(),
     a = game.state.active;
+  const spriteSnapshot = currentSpriteSnapshot();
+  const selected = p ? spriteSnapshot.representative : spriteSnapshot.active;
+  const candidates = selected?.candidates || [];
   return {
     name: p?.name || activeName(a) || "Egg",
-    sprite: p?.sprite || representativeSprite() || spriteUrl(a) || "assets/emerald-egg-static.png",
+    sprite: candidates[0]?.src || (!a ? "assets/emerald-egg-static.png" : null),
+    spriteCandidates: a || p ? candidates : null,
     tokens: lastUsage?.today?.tokens ?? 0,
     egg: a ? null : {
       progress: eggProgress(game.state.eggUsage),
@@ -767,14 +856,14 @@ app.whenReady().then(() => {
   liveUsageDisplay = new LiveUsageDisplay(game.state.liveUsageDisplay);
   lastRefreshAt = Number(game.state.lastRefreshAt || 0);
   if (isLinuxPlatform) syncLinuxAutostart();
-  else
+  else if (!testProfile)
     app.setLoginItemSettings({
       openAtLogin: Boolean(game.state.settings.launchAtLogin),
     });
   if (desktopCapabilities.tray) {
     try {
       tray = new Tray(icon());
-      tray.setToolTip("PokeTokenBar");
+      tray.setToolTip(formatTrayTooltip({ qa: testProfile, runId: testProfileId }));
       tray.on("click", () =>
         win?.isVisible() ? hidePopover() : createWindow(),
       );
@@ -807,9 +896,19 @@ app.whenReady().then(() => {
     if (type === "buy") ok = game.buyItem(value);
     if (type === "pokedoll") ok = game.activatePokeDoll();
     if (type === "candy") ok = game.useRareCandy();
+    if (type === "candy-xl") ok = game.useExpCandyXL();
+    if (type === "hatch-incubator") ok = game.activateHatchIncubator();
+    if (type === "shiny-incense") ok = game.activateShinyIncense();
     if (type === "mint") ok = game.useMint();
     if (type === "egg") ok = game.buyEgg(value ?? null);
     if (type === "setting-live" && value && typeof value.key === "string") {
+      if (
+        value.key === "masterModeUnlocked" ||
+        ((value.key === "masterPokedexAll" || value.key === "masterTokenEdit") &&
+                  (!game.state.settings.masterModeUnlocked ||
+                    (value.key === "masterTokenEdit" && !testProfile)))
+      )
+        return { ...snapshot(), ok: false, error: "Master mode is locked" };
       game.updateSetting(value.key, value.value);
       if (value.key === "floatingPetSize" && petWin && !petWin.isDestroyed()) {
         petController?.setSize(game.state.settings.floatingPetSize);
@@ -821,8 +920,15 @@ app.whenReady().then(() => {
       return { ok: true };
     }
     if (type === "setting" && value && typeof value.key === "string") {
+      if (
+        value.key === "masterModeUnlocked" ||
+        ((value.key === "masterPokedexAll" || value.key === "masterTokenEdit") &&
+                  (!game.state.settings.masterModeUnlocked ||
+                    (value.key === "masterTokenEdit" && !testProfile)))
+      )
+        return { ...snapshot(), ok: false, error: "Master mode is locked" };
       game.updateSetting(value.key, value.value);
-      if (value.key === "launchAtLogin")
+      if (value.key === "launchAtLogin" && !testProfile)
         if (isLinuxPlatform) syncLinuxAutostart();
         else
           app.setLoginItemSettings({
@@ -838,8 +944,32 @@ app.whenReady().then(() => {
       syncGoldWalking();
       ok = true;
     }
+    if (type === "master-set-wallet") {
+          if (!testProfile)
+            return { ...snapshot(), ok: false, error: "Token editing is QA-only" };
+          ok = game.setSpendableWallet(value);
+      if (ok) save();
+      return { ...snapshot(), ok };
+    }
+    if (type === "add-test-shop-tokens") {
+      ok = game.addTestShopTokens(value);
+      return { ...snapshot(), ok };
+    }
+    if (type === "master-mode-off") {
+      ok = game.disableMasterMode();
+      masterModeCheckClicks = 0;
+      if (ok) save();
+      return { ...snapshot(), ok };
+    }
     if (type === "check-update") {
-      return { ...snapshot(), update: await checkLatestRelease(), ok: true };
+      let masterMode = { unlocked: Boolean(game.state.settings.masterModeUnlocked), justUnlocked: false, clicks: masterModeCheckClicks };
+      masterMode = registerCheckNow(game.state.settings, masterModeCheckClicks);
+      masterModeCheckClicks = masterMode.clicks;
+      if (masterMode.justUnlocked) {
+        game.updateSetting("masterModeUnlocked", true);
+        save();
+      }
+      return { ...snapshot(), update: await checkLatestRelease(), masterMode, ok: true };
     }
     if (type === "open-external") {
       const url = validExternalUrl(value);
@@ -921,17 +1051,17 @@ app.whenReady().then(() => {
       app.quit();
       return { ...snapshot(), ok: true };
     }
-    if (ok && type !== "candy") save();
-    if (ok && type === "candy") {
+    if (ok && !["candy", "candy-xl"].includes(type)) save();
+    if (ok && ["candy", "candy-xl"].includes(type)) {
       scheduleDeferredCandySave();
       syncFloatingPet();
       scheduleDeferredRefresh("sparkle");
       return { ...snapshot(), ok };
     }
     const result = await refresh(
-      ok && (type === "mint" || type === "candy") ? "sparkle" : null,
+      ok && (["mint", "candy", "candy-xl"].includes(type)) ? "sparkle" : null,
     );
-    if (ok && type === "candy") syncFloatingPet();
+    if (ok && ["candy", "candy-xl"].includes(type)) syncFloatingPet();
     return { ...result, ok };
   });
   scheduleRefresh();

@@ -5,20 +5,24 @@ const path = require('node:path');
 const { Game, phaseThreshold } = require('../core/game.cjs');
 const { PokeApi } = require('../core/pokeapi.cjs');
 
-test('the shipped Gen 1-5 catalog has every root line through #649 except Ditto', () => {
-  const file = path.join(__dirname, '..', 'assets', 'pokemon-catalog-gen1-5.json');
+test('the shipped Gen 1-9 catalog contains all species and excludes Ditto only from root lines', () => {
+  const file = path.join(__dirname, '..', 'assets', 'pokemon-catalog.json');
   assert.equal(fs.existsSync(file), true);
   const catalog = JSON.parse(fs.readFileSync(file, 'utf8'));
-  assert.ok(catalog.length >= 300);
-  assert.equal(catalog.some(x => x.id === 132), false);
-  assert.ok(catalog.every(x => x.id >= 1 && x.id <= 649 && x.line?.pathIds?.length));
+  assert.equal(catalog.schemaVersion, 2);
+  assert.equal(Object.keys(catalog.species).length, 1025);
+  assert.equal(catalog.lines.length, 540);
+  assert.equal(catalog.lines.some((x) => x.id === 132), false);
+  assert.ok(catalog.lines.every((x) => x.line?.pathIds?.length));
+  assert.ok(catalog.lines.some((x) => x.id === 56 && x.line.pathOptions.some((pathIds) => pathIds.includes(979))));
 });
 
 test('PokeApi uses the shipped catalog before network access', async () => {
   const api = new PokeApi(path.join(__dirname, '..', 'assets', '.test-cache'));
   const index = await api.baseIndex();
-  assert.ok(index.length >= 300);
-  assert.equal(index.some(x => x.id === 132), false);
+  assert.equal(index.length, 540);
+  assert.ok(index.some((x) => x.id === 56 && x.line?.pathOptions?.some((pathIds) => pathIds.includes(979))));
+  assert.equal(index.some((x) => x.id === 132), false);
 });
 
 test('a common multi-stage hatch can become a Ditto disguise and reveal at first evolution', () => {

@@ -2,6 +2,10 @@ const DEFAULT_SETTINGS = Object.freeze({
   language: "en",
   refreshMinutes: 1,
   limitDisplay: "used",
+  spriteStyle: "auto",
+  masterModeUnlocked: false,
+  masterPokedexAll: false,
+  masterTokenEdit: false,
   launchAtLogin: false,
   menuTodayTokens: true,
   menuTodayCost: false,
@@ -25,6 +29,7 @@ const SELECTS = {
   language: ["it", "en", "ko", "ja", "es", "fr", "pt"],
   refreshMinutes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
   limitDisplay: ["used", "remaining"],
+  spriteStyle: ["auto", "pixel-gen5"],
 };
 const TOGGLES = [
   "launchAtLogin",
@@ -33,6 +38,9 @@ const TOGGLES = [
   "menuLimitPercent",
   "showFloatingPet",
   "showGoldWalking",
+  "masterModeUnlocked",
+  "masterPokedexAll",
+  "masterTokenEdit",
 
   "notificationsBubbles",
   "updateNotifications",
@@ -77,7 +85,7 @@ function normalizeSettings(input = {}) {
       DEFAULT_SETTINGS.refreshMinutes,
     );
   else out.refreshMinutes = DEFAULT_SETTINGS.refreshMinutes;
-  for (const key of ["language", "limitDisplay"])
+  for (const key of ["language", "limitDisplay", "spriteStyle"])
     if (!SELECTS[key].includes(out[key])) out[key] = DEFAULT_SETTINGS[key];
   for (const key of TOGGLES) out[key] = booleanValue(out[key], DEFAULT_SETTINGS[key]);
   out.warningPercent = clampInt(

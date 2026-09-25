@@ -1,4 +1,5 @@
 const { normalizeSettings } = require('./settings.cjs');
+const { safeSourceUrl } = require('./catalog-contract.cjs');
 
 const SNAPSHOT_SCHEMA_VERSION = 1;
 const ALLOWED_MODES = new Set([
@@ -23,6 +24,10 @@ const SAFE_SETTING_KEYS = Object.freeze([
   'language',
   'refreshMinutes',
   'limitDisplay',
+  'spriteStyle',
+  'masterModeUnlocked',
+  'masterPokedexAll',
+  'masterTokenEdit',
   'launchAtLogin',
   'menuTodayTokens',
   'menuTodayCost',
@@ -39,7 +44,15 @@ const SAFE_SETTING_KEYS = Object.freeze([
   'providerStatus',
   'keychainOptOut',
 ]);
-const SAFE_INVENTORY_KEYS = new Set(['rareCandy', 'mint', 'shinyCharm']);
+const SAFE_INVENTORY_KEYS = new Set([
+  'rareCandy',
+  'mint',
+  'shinyCharm',
+  'pokeDoll',
+  'expCandyXL',
+  'hatchIncubator',
+  'shinyIncense',
+]);
 const SAFE_CAPABILITY_KEYS = Object.freeze([
   'mode',
   'platform',
@@ -55,6 +68,7 @@ const SAFE_CAPABILITY_KEYS = Object.freeze([
   'notifications',
   'autostart',
   'floatingPet',
+  'qa',
 
   'companionFallback',
 ]);
@@ -149,6 +163,8 @@ function sanitizeCollection(value) {
       shiny: Boolean(entry?.shiny),
       isRaising: Boolean(entry?.isRaising),
       rarity: safeRarity(entry?.rarity),
+      lineRarity: safeRarity(entry?.lineRarity ?? entry?.rarity),
+      stageRarity: safeRarity(entry?.stageRarity ?? entry?.rarity),
     }))
     : [];
   const catchLog = Array.isArray(source.catchLog)
@@ -165,7 +181,7 @@ function sanitizeCollection(value) {
       names: safeNames(entry?.names),
     }))
     : [];
-  return { pokedex, catchLog };
+  return { pokedex, catchLog, total: safeInteger(source.total) };
 }
 
 function sanitizeInventory(value) {
@@ -223,44 +239,106 @@ function sanitizeUsage(value) {
 }
 
 function sanitizeUrl(value) {
-  const candidate = safeText(value);
-  if (!candidate) return null;
+  const candidate = typeof value === 'string' ? value.trim() : '';
+  if (!candidate || candidate.length > 2_048 || candidate.includes('\0')) return null;
   if (/^assets\/[A-Za-z0-9._/-]+$/.test(candidate) && !candidate.includes('..')) return candidate;
-  try {
-    const url = new URL(candidate);
-    const decodedPath = decodeURIComponent(url.pathname);
-    const pathSegments = decodedPath.split('/');
-    if (
-      url.protocol === 'https:' &&
-      url.href === candidate &&
-      url.hostname === 'raw.githubusercontent.com' &&
-      url.host === 'raw.githubusercontent.com' &&
-      !url.username &&
-      !url.password &&
-      !url.search &&
-      !url.hash &&
-      decodedPath.startsWith('/PokeAPI/sprites/') &&
-      !decodedPath.includes('\\') &&
-      !pathSegments.includes('..')
-    ) return url.href;
-  } catch {}
-  return null;
+  return safeSourceUrl(candidate) ? candidate : null;
+}
+
+const SAFE_SPRITE_FALLBACKS = new Set([
+  'static',
+  'missing-shiny',
+  'offline-missing',
+  'missing-sprite',
+  'image-load-failed',
+]);
+
+function sanitizeSpriteCandidate(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const src = sanitizeUrl(value.src);
+  if (!src) return null;
+  const fallbackKind = value.fallbackKind == null
+    ? null
+    : safeText(value.fallbackKind);
+  return {
+    src,
+    provider: safeText(value.provider, 'unknown'),
+    animated: Boolean(value.animated),
+    shiny: Boolean(value.shiny),
+    fallbackKind: fallbackKind && SAFE_SPRITE_FALLBACKS.has(fallbackKind)
+      ? fallbackKind
+      : null,
+  };
+}
+
+function sanitizeSpriteList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, 32).map(sanitizeSpriteCandidate).filter(Boolean);
+}
+
+function sanitizeSpriteSubject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const speciesId = safeInteger(value.speciesId);
+  if (speciesId < 1) return null;
+  return {
+    speciesId,
+    shiny: Boolean(value.shiny),
+    candidates: sanitizeSpriteList(value.candidates),
+  };
+}
+
+function sanitizeSpriteCandidates(value) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const style = source.style === 'pixel-gen5' ? 'pixel-gen5' : 'auto';
+  const collection = {};
+  const entries = source.collection && typeof source.collection === 'object' && !Array.isArray(source.collection)
+    ? Object.entries(source.collection)
+    : [];
+  for (const [key, entry] of entries.slice(0, 2_000)) {
+    if (!/^\d+$/.test(key)) continue;
+    collection[key] = {
+      normal: sanitizeSpriteList(entry?.normal),
+      shiny: sanitizeSpriteList(entry?.shiny),
+    };
+  }
+  return {
+    schemaVersion: 1,
+    style,
+    offline: Boolean(source.offline),
+    active: sanitizeSpriteSubject(source.active),
+    representative: sanitizeSpriteSubject(source.representative),
+    collection,
+  };
 }
 
 function sanitizeRepresentative(value) {
   if (!value || typeof value !== 'object') return null;
-  return {
+  const result = {
     id: safeInteger(value.id),
     name: safeText(value.name, `#${safeInteger(value.id)}`),
     shiny: Boolean(value.shiny),
     rarity: safeRarity(value.rarity),
   };
+  const sprite = sanitizeUrl(value.sprite);
+  if (sprite) result.sprite = sprite;
+  const candidates = sanitizeSpriteList(value.spriteCandidates);
+  if (candidates.length) result.spriteCandidates = candidates;
+  return result;
 }
 
 function sanitizeBalance(value) {
   const source = value && typeof value === 'object' ? value : {};
   const result = {};
-  for (const key of ['freshEgg', 'rareCandy', 'mint', 'shinyCharm']) {
+  for (const key of [
+    'freshEgg',
+    'rareCandy',
+    'mint',
+    'shinyCharm',
+    'pokeDoll',
+    'expCandyXL',
+    'hatchIncubator',
+    'shinyIncense',
+  ]) {
     result[key] = { price: safeInteger(source[key]?.price) };
   }
   const common = result.freshEgg.price;
@@ -313,6 +391,11 @@ function sanitizeSnapshot(value, options = {}) {
     version: safeInteger(rawState.version),
     eggUsage: finiteNumber(rawState.eggUsage),
     eggTier: ALLOWED_RARITIES.has(rawState.eggTier) ? rawState.eggTier : null,
+    nextHatchModifiers: {
+      hatchIncubator: Boolean(rawState.nextHatchModifiers?.hatchIncubator),
+      shinyIncense: Boolean(rawState.nextHatchModifiers?.shinyIncense),
+    },
+    pokeDollActive: Boolean(rawState.pokeDollActive),
     active,
     dex,
     inventory: sanitizeInventory(rawState.inventory),
@@ -332,16 +415,19 @@ function sanitizeSnapshot(value, options = {}) {
     capabilities: sanitizeCapabilities(options.capabilities ?? source.capabilities),
     lastRefreshAt: safeInteger(source.lastRefreshAt ?? rawState.lastRefreshAt),
     wallet: finiteNumber(source.wallet),
+    testShopTokens: finiteNumber(source.testShopTokens),
     balance: sanitizeBalance(source.balance),
     settings,
     state,
     active,
     representative: sanitizeRepresentative(source.representative),
+    spriteCandidates: sanitizeSpriteCandidates(source.spriteCandidates),
     collection: sanitizeCollection(source.collection),
     egg: {
       progress: Math.max(0, Math.min(1, finiteNumber(source.egg?.progress))),
       remaining: finiteNumber(source.egg?.remaining),
       tier: ALLOWED_RARITIES.has(source.egg?.tier) ? source.egg.tier : null,
+      threshold: finiteNumber(source.egg?.threshold, 5_000_000),
       sprite: sanitizeUrl(source.egg?.sprite),
       animatedSprite: sanitizeUrl(source.egg?.animatedSprite),
     },

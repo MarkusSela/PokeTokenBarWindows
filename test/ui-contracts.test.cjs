@@ -18,12 +18,54 @@ test('main navigation and persistent bottom system bar are present', () => {
 test('shop and bag expose local item icons and all original purchasable entries', () => {
   assert.match(html, /rareCandy:'rare-candy'/);
   assert.match(html, /mint:'mint'/);
-  assert.match(html, /shinyCharm:'shiny-charm'/);
+  assert.match(html, /shinyCharm:\{pixel:'assets\/items\/shiny-charm\.png'/);
+  assert.match(html, /pokeDoll:\{pixel:'assets\/items\/poke-doll\.png'/);
   assert.match(html, /src="assets\/items\/\$\{names\[kind\]\}\.png"/);
+  assert.doesNotMatch(html, /src="https?:\/\//);
   assert.match(html, /Mint/);
   assert.match(html, /Rare Candy/);
   assert.match(html, /Uncommon Egg/);
   assert.match(html, /Rare Egg/);
+});
+
+test('Shop selects sharp egg artwork only for Auto style and keeps the Pixel Gen V fallback', () => {
+  assert.match(html, /function itemIcon\(kind\)/);
+  assert.match(html, /egg-common-auto\.png/);
+  assert.match(html, /egg-uncommon-auto\.png/);
+  assert.match(html, /egg-rare-auto\.png/);
+  assert.match(html, /data\.settings\?\.spriteStyle==='auto'/);
+  assert.match(html, /egg-common/);
+  assert.match(html, /egg-uncommon/);
+  assert.match(html, /egg-rare/);
+});
+
+test('Shop and Bag expose the first three new consumable objects with local style-aware icons', () => {
+  assert.match(html, /expCandyXL/);
+  assert.match(html, /hatchIncubator/);
+  assert.match(html, /shinyIncense/);
+  assert.match(html, /exp-candy-xl-pixel\.png/);
+  assert.match(html, /exp-candy-xl-auto\.webp/);
+  assert.match(html, /hatch-incubator-3d\.png/);
+  assert.match(html, /shiny-incense-pixel\.png/);
+  assert.match(html, /shiny-incense-auto\.png/);
+  assert.match(html, /candy-xl/);
+  assert.match(html, /hatch-incubator/);
+  assert.match(html, /shiny-incense/);
+  assert.match(html, /Exp\. Candy XL/);
+  assert.match(html, /Hatch Incubator/);
+  assert.match(html, /Shiny Incense/);
+});
+test('every object with two supplied artworks follows the style selector', () => {
+  const itemIcon = html.slice(html.indexOf('function itemIcon('), html.indexOf('function selectProvider('));
+  for (const kind of ['expCandyXL', 'hatchIncubator', 'shinyIncense', 'pokeDoll', 'shinyCharm']) {
+    assert.match(itemIcon, new RegExp(`${kind}:\\{pixel:`), `${kind} must declare a pixel variant`);
+    assert.match(itemIcon, new RegExp(`${kind}:\\{[^}]*auto:`), `${kind} must declare an Auto variant`);
+  }
+  assert.match(itemIcon, /poke-doll\.png/);
+  assert.match(itemIcon, /poke-doll-auto\.webp/);
+  assert.match(itemIcon, /shiny-charm\.png/);
+  assert.match(itemIcon, /shiny-charm-auto\.png/);
+  assert.match(itemIcon, /data\.settings\?\.spriteStyle==='pixel-gen5'/);
 });
 
 test('mint exposes nature feedback and a temporary sparkle effect in Home', () => {
@@ -58,6 +100,12 @@ test('collection exposes Pokedex and Catch log with species names and stable spr
   assert.match(html, /function nameOf\(x,id\)/);
   assert.match(html, /class="dex-cell"/);
   assert.match(html, /function elapsed\(date\)/);
+});
+
+test('Pokémon names remain English when the interface language changes', () => {
+  const nameOf = html.slice(html.indexOf('function nameOf('), html.indexOf('function rarityBadge('));
+  assert.match(nameOf, /value\?\.en\|\|value\?\.it/);
+  assert.doesNotMatch(nameOf, /value\?\.\[lang\(\)\]/);
 });
 
 test('Catch log keeps the active companion first and sorts graduated individuals newest first', () => {

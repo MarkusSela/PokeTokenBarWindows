@@ -1,6 +1,9 @@
 const MUTATING_ACTIONS = Object.freeze([
   'buy',
   'candy',
+  'candy-xl',
+  'hatch-incubator',
+  'shiny-incense',
   'mint',
   'egg',
   'setting',
@@ -10,6 +13,9 @@ const MUTATING_ACTIONS = Object.freeze([
   'add-scan-folder',
   'clear-scan-folders',
   'import-save',
+  'master-set-wallet',
+  'add-test-shop-tokens',
+  'master-mode-off',
 ]);
 
 const READ_ACTIONS = new Set(['snapshot', 'refresh', 'check-update', 'export-save']);
@@ -55,6 +61,7 @@ function buildCapabilities({
   trayAvailable,
   notificationAvailable,
   overlayAvailable,
+  qa = false,
 } = {}) {
   const desktop = isDesktopMode(mode);
   const web = isWebMode(mode);
@@ -92,6 +99,7 @@ function buildCapabilities({
     notifications,
     autostart: desktop,
     floatingPet: overlay,
+    qa: Boolean(qa),
 
     companionFallback: overlay ? null : 'home',
   };

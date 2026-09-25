@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "provider": "pokemon-showdown",
+    "set": "xyani",
+    "revision": "master (URLs verified at run time)",
+    "licenseRef": "showdown-sprites-rights-pending",
+    "packageAllowed": false,
+    "verificationRef": "agent-evidence/NEXT-TRAY-SPRITES/20260917T184636Z/N03-targeted-probes.json",
+    "visualVerificationRef": "agent-evidence/NEXT-TRAY-SPRITES/20260917T184636Z/N03-probe-contact-sheet.png"
+  },
+  "overrides": {
+    "pokemon:650": {
+      "normal": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani/chespin.gif",
+        "localPath": null,
+        "sha256": "259c63e07ae3fd713758e3c8a9e536020740a6944813ddb522d9d1f3c62406ea",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }],
+      "shiny": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani-shiny/chespin.gif",
+        "localPath": null,
+        "sha256": "11c25cbfd76b679c3cb148c08aeb59b396b8063fcbf812d2306475117b5b307b",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }]
+    },
+    "pokemon:906": {
+      "normal": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani/sprigatito.gif",
+        "localPath": null,
+        "sha256": "a25092f8e9e00986c14cc702bf16c90e8cae6b0fa949b909731a041e4fa18996",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }],
+      "shiny": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani-shiny/sprigatito.gif",
+        "localPath": null,
+        "sha256": "bfd665ebb560c44e90a924147e26dac1327feec6e1941e0d752c7e85a58a7ce0",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }]
+    },
+    "pokemon:979": {
+      "normal": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani/annihilape.gif",
+        "localPath": null,
+        "sha256": "f405be786686f26fb8ae4fff440a15e5d976c11e1f68ffdcdf4482a350bac02f",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }],
+      "shiny": [{
+        "provider": "showdown",
+        "style": "auto",
+        "animated": true,
+        "sourceUrl": "https://play.pokemonshowdown.com/sprites/xyani-shiny/annihilape.gif",
+        "localPath": null,
+        "sha256": "513a9c8f673834eb53ba51b8fe2fabf44677dd930bdf128c91ab9e89cd73eef4",
+        "licenseRef": "showdown-sprites-rights-pending",
+        "packageAllowed": false
+      }]
+    }
+  },
+  "verification": {
+    "650": {"normal": {"frames": 44, "uniqueFrameHashes": 44, "motion": true}, "shiny": {"frames": 44, "uniqueFrameHashes": 44, "motion": true}},
+    "906": {"normal": {"frames": 51, "uniqueFrameHashes": 51, "motion": true}, "shiny": {"frames": 51, "uniqueFrameHashes": 51, "motion": true}},
+    "979": {"normal": {"frames": 60, "uniqueFrameHashes": 60, "motion": true}, "shiny": {"frames": 60, "uniqueFrameHashes": 60, "motion": true}}
+  }
+}

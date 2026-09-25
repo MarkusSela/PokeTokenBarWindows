@@ -17,3 +17,13 @@ test('settings normalize select and toggle values instead of accepting arbitrary
   assert.equal(updateSetting(settings, 'menuTodayCost', false).menuTodayCost, false);
   assert.equal(updateSetting(settings, 'refreshMinutes', 'manual').refreshMinutes, 0);
 });
+
+test('master mode settings are locked and boolean-normalized by default', () => {
+  assert.equal(DEFAULT_SETTINGS.masterModeUnlocked, false);
+  assert.equal(DEFAULT_SETTINGS.masterPokedexAll, false);
+  assert.equal(DEFAULT_SETTINGS.masterTokenEdit, false);
+  const normalized = normalizeSettings({ masterModeUnlocked: 'yes', masterPokedexAll: 'on', masterTokenEdit: 1 });
+  assert.equal(normalized.masterModeUnlocked, true);
+  assert.equal(normalized.masterPokedexAll, true);
+  assert.equal(normalized.masterTokenEdit, true);
+});

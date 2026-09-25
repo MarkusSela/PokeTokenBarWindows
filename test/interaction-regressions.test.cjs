@@ -19,7 +19,7 @@ test('renderer loads its first snapshot before rendering Home', () => {
 });
 
 test('renderer has a safe bootstrap snapshot while IPC is pending', () => {
-  assert.match(html, /let data=\{state:\{inventory:\{\},dex:\[\]\}/);
+  assert.match(html, /let data=\{state:\{inventory:\{\},dex:\[\]/);
 });
 
 test('renderer preserves scroll position when rerendering the same section', () => {

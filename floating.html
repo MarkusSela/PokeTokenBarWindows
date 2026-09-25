@@ -130,6 +130,7 @@
       <div id="effect" aria-hidden="true"></div>
       <div id="bubble" aria-hidden="true"></div>
     </div>
+    <script src="assets/sprite-image.js"></script>
     <script>
       const pet = document.getElementById("pet");
       const sprite = document.getElementById("sprite");
@@ -215,15 +216,23 @@
         const active = snapshot?.active || {};
         const name = snapshot?.name || active.name || "Pokémon";
         const tokens = snapshot?.tokens ?? snapshot?.usage?.today?.tokens ?? 0;
-        if (!snapshot?.active && snapshot?.egg) {
+        const candidates = Array.isArray(snapshot?.spriteCandidates)
+          ? snapshot.spriteCandidates
+          : [];
+        const isEgg = !candidates.length && !snapshot?.active && Boolean(snapshot?.egg);
+        if (isEgg) {
           eggStaticSprite = snapshot?.sprite || eggStaticSprite;
           eggAnimatedSprite = snapshot?.egg?.animatedSprite || eggAnimatedSprite;
+          sprite.src = eggStaticSprite;
+        } else if (candidates.length && window.PokeTokenSpriteImage?.load) {
+          window.PokeTokenSpriteImage.load(sprite, candidates);
+        } else if (!isEgg) {
+          sprite.src = "assets/pokemon-placeholder.svg";
         }
-        sprite.src = snapshot?.sprite || "";
         sprite.alt = name;
         bubble.textContent = `${Number(tokens).toLocaleString("en-US")} tokens today`;
         document.title = name;
-        syncEggMotion(snapshot);
+        syncEggMotion(isEgg ? snapshot : { ...snapshot, egg: null });
       }
 
       function playPetEffect(kind) {

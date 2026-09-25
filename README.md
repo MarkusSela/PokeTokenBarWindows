@@ -28,7 +28,7 @@
   <a href="README.ko.md">🇰🇷 한국어</a>
 </p>
 
-> **Current release: v0.1.13**
+> **Current release: v0.2.0**
 
 ## About this project
 
@@ -41,7 +41,8 @@ The app stays in the notification area and opens a compact Home panel when you n
 - 🥚 **Turns usage into progress:** local usage feeds the active egg, which can hatch, evolve, and graduate.
 - 📊 **Shows the numbers that matter:** see daily, weekly, monthly, and rolling usage when the source provides it.
 - 📚 **Builds a collection:** keep graduated companions in the Pokédex and review each individual in the Catch Log.
-- 🛍️ **Adds a small reward loop:** use the Shop and Bag for eggs, Rare Candy, Mints, Shiny Charm, and the consumable Poké Doll.
+- 🛍️ **Adds a small reward loop:** use the Shop and Bag for eggs, Rare Candy, Mints, Exp. Candy XL, the Hatch Incubator, Shiny Incense, Shiny Charm, and the consumable Poké Doll.
+- 🗺️ **Covers the full Pokédex:** 1,025 species across generations I to IX, animated sprites, canonical English names, and one rarity per evolution line.
 - 🫧 **Stays out of the way:** open Home from the tray or keep an optional floating companion on screen without adding another taskbar button.
 - 📁 **Accepts extra local sources:** add JSON or JSONL folders when a tool stores usage outside the built-in locations.
 - 🔒 **Keeps the boundary clear:** provider data is read-only, and the app does not need a server, SSH, Tailscale, Home Assistant, or a remote usage service.
@@ -58,11 +59,11 @@ The progression state belongs to PokeTokenBar. It does not write back to Hermes 
 
 ### Poké Doll
 
-The Poké Doll is a consumable Shop item priced at **250,000,000 tokens**. Activate it from the Bag when an egg is incubating and it stays armed until the next hatch. At that decision point, normal Pokémon species already represented in the Pokédex are excluded; shiny variants remain valid, so owning Charmander does not block Charmander shiny. The Doll affects only the next hatch and never changes the active Pokémon or the egg progress.
+The Poké Doll is a consumable Shop item priced at **250,000,000 tokens**. Activate it from the Bag while an egg is incubating: it stays armed until it actually prevents a duplicate, and only then is it consumed. At the hatch decision point, normal species already represented in the Pokédex are excluded, while shiny variants remain valid, so owning Charmander does not block Charmander shiny and a shiny duplicate leaves the Doll armed for the next egg. If every eligible species in the current egg pool is already owned, the hatch waits and the Doll stays armed. From 40% Pokédex completion onward, Home also warns when an egg is incubating while the Doll is not armed. The Doll never changes the active Pokémon or the egg progress.
 
 ## 📸 Screenshots
 
-The screenshots below use synthetic values and neutral demo paths. Each image sits beside an explanation of what the screen is for. They are documentation assets, not captures of a personal account or desktop.
+The screenshots below use synthetic values and neutral demo paths. The updated Shop, Bag, Pokédex and Settings captures use a landscape documentation layout so the current UI and its explanations remain readable side by side. They are documentation assets, not captures of a personal account or desktop.
 
 <table class="screenshot-table">
   <thead>
@@ -94,32 +95,32 @@ The screenshots below use synthetic values and neutral demo paths. Each image si
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-shop.png" width="275" alt="Shop with synthetic progression item prices including Poké Doll"><br>
+        <img src="docs/images/screenshot-shop.png" width="520" alt="Landscape Shop documentation capture with synthetic progression item prices and new item badges"><br>
         <strong>🛍️ Shop</strong>
       </td>
       <td class="screenshot-explanation">
         <strong>A place to spend progression tokens.</strong><br>
-        Shop offers optional items such as a fresh egg, Rare Egg, the Mint with its supplied local leaf icon, Rare Candy, Shiny Charm, and Poké Doll. The Poké Doll costs 250,000,000 tokens and is consumed when armed for the next hatch. Prices and the wallet in the screenshot are synthetic demonstration values, not billing data or an account wallet.
+        Shop offers optional items such as a fresh egg, Uncommon and Rare eggs, Rare Candy, the Mint, Exp. Candy XL, the Hatch Incubator, Shiny Incense, Shiny Charm, and Poké Doll, arranged as a card grid with an icon, a short description and a price for each item. Exp. Candy XL adds 250,000,000 progress to the active Pokémon, the Hatch Incubator halves the requirement of the next egg, Shiny Incense raises the next hatch shiny odds to 1/32 (1/24 with Shiny Charm), and the Poké Doll stays armed until it prevents a duplicate. Prices and the wallet in the screenshot are synthetic demonstration values, not billing data or an account wallet.
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-bag.png" width="275" alt="Bag with synthetic Rare Candy, Mint, and Poké Doll inventory"><br>
+        <img src="docs/images/screenshot-bag.png" width="520" alt="Landscape Bag documentation capture with synthetic item inventory and hatch badges"><br>
         <strong>🎒 Bag</strong>
       </td>
       <td class="screenshot-explanation">
         <strong>Use what you have earned.</strong><br>
-        Bag keeps the local item inventory in view, including the supplied Mint leaf icon, and makes each action explicit. The Poké Doll can be armed here for the next hatch; the counts and activation state shown here are synthetic and do not represent a real purchase history.
+        Bag keeps the local item inventory in view and makes each action explicit: Rare Candy, Mint and Exp. Candy XL are consumed on the active Pokémon, while the Poké Doll, the Hatch Incubator and Shiny Incense are armed for the next hatch and consumed only when that hatch happens. Each item carries its own badge beside its name. The counts and activation state shown here are synthetic and do not represent a real purchase history.
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-collection-pokedex.png" width="275" alt="Pokédex grid with synthetic collected entries"><br>
+        <img src="docs/images/screenshot-collection-pokedex.png" width="520" alt="Landscape Pokédex documentation capture with four-column synthetic collection and shiny stars"><br>
         <strong>📖 Pokédex</strong>
       </td>
       <td class="screenshot-explanation">
         <strong>See the collection at a glance.</strong><br>
-        The Pokédex records discovered stages, rarity filters, shiny ownership, and the representative Pokémon shown in the tray or floating companion. Selecting a species changes the companion display, not provider data.
+        The Pokédex lists four entries per row and records discovered stages, one rarity per evolution line, and the representative Pokémon shown in the tray or floating companion. Each shiny specimen carries a star in the top-right corner of its entry, the page bar stays pinned above the rarity filters, and selecting a species changes the companion display, not provider data.
       </td>
     </tr>
     <tr>
@@ -134,12 +135,12 @@ The screenshots below use synthetic values and neutral demo paths. Each image si
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/settings.png" width="195" alt="Settings with general, tray, companion, update, and support controls">
+        <img src="docs/images/settings.png" width="520" alt="Landscape Settings documentation capture with general, tray, companion and notification controls">
         <img src="docs/images/screenshot-scan-folders.png" width="195" alt="Advanced settings with a synthetic additional scan folder"><br>
         <strong>⚙️ Settings & progression</strong>
       </td>
       <td class="screenshot-explanation">
-        <strong>The two Settings images belong together.</strong>
+        <strong>The two Settings images belong together; the primary Settings capture is landscape and the advanced scan image remains a separate synthetic detail view.</strong>
         <ul>
           <li><strong>General:</strong> choose the language, refresh cadence, limit display, launch-at-login behavior, and representative Pokémon.</li>
           <li><strong>Tray:</strong> decide which daily totals and limit details appear in the tray tooltip.</li>
@@ -223,7 +224,7 @@ The release audit rejects personal absolute paths, credential-looking values, lo
 
 ## 📦 Install
 
-The current release is `v0.1.13`.
+The current release is `v0.2.0`.
 
 1. Open the [Releases page](https://github.com/MarkusSela/PokeTokenBarWindows/releases).
 2. Download `PokeTokenBar-Windows-Setup-<version>.exe`.

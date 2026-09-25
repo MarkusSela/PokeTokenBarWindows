@@ -178,8 +178,8 @@ test('Home provider breakdown uses today providers and companion credits them se
   assert.match(main, /applyUsageRows\(rawUsage\.progressionRows/);
   assert.match(main, /liveUsageDisplay\.apply\(rawUsage, liveUsageDelta\)/);
   assert.match(html, /data\.usage\?\.todayProviders/);
-  assert.match(main, /eggProgress\(game\.state\.eggUsage\)/);
-  assert.match(main, /eggTokensToHatch\(game\.state\.eggUsage\)/);
+  assert.match(main, /eggProgress\(game\.state\.eggUsage,\s*game\.hatchThreshold\(\)\)/);
+  assert.match(main, /eggTokensToHatch\(game\.state\.eggUsage,\s*game\.hatchThreshold\(\)\)/);
 });
 
 test('main refresh merges Hermes with the built-in provider readers', () => {
