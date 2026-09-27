@@ -63,7 +63,7 @@ The Poké Doll is a consumable Shop item priced at **250,000,000 tokens**. Activ
 
 ## 📸 Screenshots
 
-The screenshots below use synthetic values and neutral demo paths. The updated Shop, Bag, Pokédex and Settings captures use a landscape documentation layout so the current UI and its explanations remain readable side by side. They are documentation assets, not captures of a personal account or desktop.
+The screenshots below use synthetic values and neutral demo paths. The updated captures show only the native application popover; explanatory text remains in this README rather than inside the image. They are documentation assets, not captures of a personal account or desktop.
 
 <table class="screenshot-table">
   <thead>
@@ -140,7 +140,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
         <strong>⚙️ Settings & progression</strong>
       </td>
       <td class="screenshot-explanation">
-        <strong>The two Settings images belong together; the primary Settings capture is landscape and the advanced scan image remains a separate synthetic detail view.</strong>
+        <strong>The two Settings images belong together; the primary Settings capture is the native popover and the advanced scan image remains a separate synthetic detail view.</strong>
         <ul>
           <li><strong>General:</strong> choose the language, refresh cadence, limit display, launch-at-login behavior, and representative Pokémon.</li>
           <li><strong>Tray:</strong> decide which daily totals and limit details appear in the tray tooltip.</li>
