@@ -6,13 +6,13 @@ This page documents the images used by the release README. Each screenshot is pa
 
 | Screenshot | Feature | Description | Data policy |
 | --- | --- | --- | --- |
-| `screenshot-home.gif` | Home | Animated landscape app capture with Pikachu: the Home panel combines the active companion, progress, daily and period usage, provider details, and the limits status. | Synthetic rows, totals, and companion progress only. |
+| `screenshot-home.png` | Home | Static native popover capture with Pikachu: the Home panel combines the active companion, progress, daily and period usage, provider details, and the limits status. | Synthetic rows, totals, and companion progress only. |
 | `tray-and-popover.png` | Tray access | The notification-area icon opens Home without a separate taskbar button. Closing Home leaves the app resident in the tray. | Neutral illustration with no unrelated tray icons, clock, notifications, or personal app names. |
-| `screenshot-shop.png` | Shop | Landscape app capture showing the three-column item card grid, the three new items, item badges, synthetic prices and the synthetic wallet. | Synthetic wallet and prices only. No billing or account balance. |
-| `screenshot-bag.png` | Bag | Landscape app capture showing item artwork, the adjacent Poké Doll heart, the silver Incubator badge, the ochre three-star Incense badge and explicit hatch actions. | Synthetic item counts and activation state only. |
-| `screenshot-collection-pokedex.png` | Pokédex | Landscape app capture showing four entries per row, shiny stars in the top-right of shiny cards, the pinned page bar and rarity filters. | Synthetic species and collection state. |
+| `screenshot-shop.png` | Shop | Native Shop popover capture showing the three-column item card grid, the three new items, item badges, synthetic prices and the synthetic wallet. | Synthetic wallet and prices only. No billing or account balance. |
+| `screenshot-bag.png` | Bag | Native Bag popover capture showing item artwork, the adjacent Poké Doll heart, the silver Incubator badge, the ochre three-star Incense badge and explicit hatch actions. | Synthetic item counts and activation state only. |
+| `screenshot-collection-pokedex.png` | Pokédex | Native Pokédex popover capture showing four entries per row, shiny stars in the top-right of shiny cards, the pinned page bar and rarity filters. | Synthetic species and collection state. |
 | `screenshot-collection-catchlog.png` | Catch Log | The history view separates the active companion from graduated ones and keeps each evolution chain, nature, rarity, and date together. | Neutral demonstration dates and names only. |
-| `settings.png` + `screenshot-scan-folders.png` | Settings and progression | The two images belong together: the landscape first image shows the current controls, while the second shows the advanced read-only scan-folder area. | `C:\Demo\AI-Logs` is a synthetic path. No personal folders or source databases are used. |
+| `settings.png` + `screenshot-scan-folders.png` | Settings and progression | The two images belong together: the first is a native Settings popover capture, while the second shows the advanced read-only scan-folder area. | `C:\Demo\AI-Logs` is a synthetic path. No personal folders or source databases are used. |
 | `floating-pet.png` | Floating companion | The optional companion window can stay visible independently from Home and outside the taskbar. | Static synthetic Pokémon state with no surrounding desktop content. |
 | `assets/gold-companion-walking.gif` | Gold walking overlay | Gold and his Pokémon can cross the screen independently from Home. The overlay is opt-in and has its own size control. | Static synthetic animation asset. |
 | `shiny-banner.png` | Shiny state | A shiny companion receives a distinct visual treatment and notification moment. | Static synthetic state only. |
@@ -44,7 +44,7 @@ Additional folders are selected explicitly and read in JSON/JSONL counter-only m
 
 ## Capture method
 
-The current Home, Shop, Bag, Pokédex and primary Settings images are clean landscape app captures built from the isolated renderer on a neutral background; they contain no explanatory panels or desktop chrome. Prefer the packaged app launched with an isolated temporary state directory and isolated empty provider roots. If a desktop capture is necessary, use a clean Windows profile or crop and redact the entire surrounding desktop before saving.
+The current Home, Shop, Bag, Pokédex and primary Settings images are native popover captures from the isolated renderer; they contain only the app window, with no explanatory panels, artificial canvas or desktop chrome. Prefer the packaged app launched with an isolated temporary state directory and isolated empty provider roots. If a desktop capture is necessary, use a clean Windows profile or crop and redact the entire surrounding desktop before saving.
 
 Before adding an image:
 

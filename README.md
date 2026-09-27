@@ -75,12 +75,12 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
   <tbody>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-home.gif" width="520" alt="Animated landscape Home documentation capture with Pikachu and synthetic usage progress"><br>
+        <img src="docs/images/screenshot-home.png" width="380" alt="Static Home popover capture with Pikachu and synthetic usage progress"><br>
         <strong>🏠 Home</strong>
       </td>
       <td class="screenshot-explanation">
         <strong>The place to start.</strong><br>
-        Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact panel. The release capture uses an animated Pikachu companion in a clean landscape app capture. It opens from the tray and does not create a second taskbar button.
+        Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact popover capture. The synthetic release capture uses the popular Pikachu companion. It opens from the tray and does not create a second taskbar button.
       </td>
     </tr>
     <tr>
@@ -95,7 +95,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-shop.png" width="520" alt="Landscape Shop documentation capture with synthetic progression item prices and new item badges"><br>
+        <img src="docs/images/screenshot-shop.png" width="360" alt="Static Shop popover capture with synthetic progression item prices and new item badges"><br>
         <strong>🛍️ Shop</strong>
       </td>
       <td class="screenshot-explanation">
@@ -105,7 +105,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-bag.png" width="520" alt="Landscape Bag documentation capture with synthetic item inventory and hatch badges"><br>
+        <img src="docs/images/screenshot-bag.png" width="380" alt="Static Bag popover capture with synthetic item inventory and hatch badges"><br>
         <strong>🎒 Bag</strong>
       </td>
       <td class="screenshot-explanation">
@@ -115,7 +115,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-collection-pokedex.png" width="520" alt="Landscape Pokédex documentation capture with four-column synthetic collection and shiny stars"><br>
+        <img src="docs/images/screenshot-collection-pokedex.png" width="360" alt="Static Pokédex popover capture with four-column synthetic collection and shiny stars"><br>
         <strong>📖 Pokédex</strong>
       </td>
       <td class="screenshot-explanation">
@@ -135,7 +135,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/settings.png" width="520" alt="Landscape Settings documentation capture with general, tray, companion and notification controls">
+        <img src="docs/images/settings.png" width="360" alt="Static Settings popover capture with general, tray, companion and notification controls">
         <img src="docs/images/screenshot-scan-folders.png" width="195" alt="Advanced settings with a synthetic additional scan folder"><br>
         <strong>⚙️ Settings & progression</strong>
       </td>
