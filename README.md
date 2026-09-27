@@ -83,16 +83,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
         Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact popover capture. The synthetic release capture uses the popular Pikachu companion. It opens from the tray and does not create a second taskbar button.
       </td>
     </tr>
-    <tr>
-      <td align="center">
-        <img src="docs/images/tray-and-popover.png" width="420" alt="Illustration of the notification-area icon and Home panel"><br>
-        <strong>📍 Tray access</strong>
-      </td>
-      <td class="screenshot-explanation">
-        <strong>A tray-first desktop flow.</strong><br>
-        This is a neutral illustration of the entry point. The notification-area icon opens Home, the context menu can refresh or quit, and closing the panel leaves PokeTokenBar running quietly in the tray.
-      </td>
-    </tr>
+
     <tr>
       <td align="center">
         <img src="docs/images/screenshot-shop.png" width="360" alt="Static Shop popover capture with synthetic progression item prices and new item badges"><br>
@@ -151,36 +142,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
         These controls change PokeTokenBar's own settings and progression display. They never modify Hermes or another provider's files.
       </td>
     </tr>
-    <tr>
-      <td align="center">
-        <img src="docs/images/floating-pet.png" width="153" alt="Static floating companion window"><br>
-        <strong>🫧 Floating companion</strong>
-      </td>
-      <td class="screenshot-explanation">
-        <strong>A separate companion window.</strong><br>
-        The optional pet can remain visible while Home is closed. It is transparent, excluded from the taskbar, and follows the selected representative without moving or resizing during a usage refresh.
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="assets/gold-companion-walking.gif" width="275" alt="Optional Gold walking overlay"><br>
-        <strong>🚶 Gold walking overlay</strong>
-      </td>
-      <td class="screenshot-explanation">
-        <strong>An optional ambient animation.</strong><br>
-        Gold and his Pokémon can cross the screen independently from Home. The overlay is opt-in, has its own size control, and remains outside the taskbar.
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <img src="docs/images/shiny-banner.png" width="275" alt="Shiny companion state"><br>
-        <strong>✨ Shiny state</strong>
-      </td>
-      <td class="screenshot-explanation">
-        <strong>A rare result with its own visual language.</strong><br>
-        This banner shows how the app presents a shiny companion and its notification moment. It is a static, synthetic documentation state.
-      </td>
-    </tr>
+
 
   </tbody>
 </table>

@@ -74,7 +74,7 @@ test('README screenshot table references only existing documentation images', ()
   const readme = read('README.md');
   const imagePaths = [...readme.matchAll(/(?:src|href)="(docs\/images\/[^"?#]+\.(?:png|gif))"/g)].map((match) => match[1]);
 
-  assert.equal(new Set(imagePaths).size, 10);
+  assert.equal(new Set(imagePaths).size, 7);
   for (const imagePath of imagePaths) {
     assert.equal(fs.existsSync(path.join(root, imagePath)), true, imagePath);
   }
@@ -93,13 +93,10 @@ test('README uses the supplied static Home popover screenshot', () => {
 test('README pairs every visual preview with an explanation and groups Settings previews', () => {
   const readme = read('README.md');
   const rows = [...readme.matchAll(/<tr>[\s\S]*?<\/tr>/g)].map((match) => match[0]);
-  const visualPaths = [
-    ...[...readme.matchAll(/(?:src|href)="(docs\/images\/[^"?#]+\.(?:png|gif))"/g)].map((match) => match[1]),
-    'assets/gold-companion-walking.gif',
-  ];
+  const visualPaths = [...readme.matchAll(/(?:src|href)="(docs\/images\/[^"?#]+\.(?:png|gif))"/g)].map((match) => match[1]);
 
   assert.match(readme, /class="screenshot-table"/);
-  assert.equal((readme.match(/class="screenshot-explanation"/g) || []).length, 10);
+  assert.equal((readme.match(/class="screenshot-explanation"/g) || []).length, 6);
   for (const visualPath of visualPaths) {
     const row = rows.find((candidate) => candidate.includes(`src="${visualPath}"`));
     assert.ok(row, `missing README row for ${visualPath}`);
