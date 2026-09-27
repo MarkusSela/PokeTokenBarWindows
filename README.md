@@ -80,7 +80,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated S
       </td>
       <td class="screenshot-explanation">
         <strong>The place to start.</strong><br>
-        Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact panel. The release capture uses an animated Pikachu companion in a synthetic landscape board. It opens from the tray and does not create a second taskbar button.
+        Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact panel. The release capture uses an animated Pikachu companion in a clean landscape app capture. It opens from the tray and does not create a second taskbar button.
       </td>
     </tr>
     <tr>
