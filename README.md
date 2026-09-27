@@ -32,20 +32,20 @@
 
 ## About this project
 
-PokeTokenBar is an independent desktop companion inspired by the original [PokeTokenBar project](https://github.com/chattymin/PokeTokenBar). This repository contains the Windows build, with the same simple idea at its centre: local AI coding usage becomes an egg, then a companion, then a growing Pokédex.
+PokeTokenBar is an independent desktop companion inspired by the original [PokeTokenBar project](https://github.com/chattymin/PokeTokenBar). This repository contains the Windows build: local AI coding usage becomes an egg, then a companion, then a growing Pokédex.
 
-The app stays in the notification area and opens a compact Home panel when you need it. Your provider data remains on the machine, while the companion keeps its own progression state separately.
+The app stays in the notification area and opens a compact Home popover when needed. Provider data remains on the machine, while PokeTokenBar keeps its own progression state separately.
 
 ## ✨ What it does
 
 - 🥚 **Turns usage into progress:** local usage feeds the active egg, which can hatch, evolve, and graduate.
 - 📊 **Shows the numbers that matter:** see daily, weekly, monthly, and rolling usage when the source provides it.
 - 📚 **Builds a collection:** keep graduated companions in the Pokédex and review each individual in the Catch Log.
-- 🛍️ **Adds a small reward loop:** use the Shop and Bag for eggs, Rare Candy, Mints, Exp. Candy XL, the Hatch Incubator, Shiny Incense, Shiny Charm, and the consumable Poké Doll.
-- 🗺️ **Covers the full Pokédex:** 1,025 species across generations I to IX, animated sprites, canonical English names, and one rarity per evolution line.
-- 🫧 **Stays out of the way:** open Home from the tray or keep an optional floating companion on screen without adding another taskbar button.
+- 🛍️ **Adds a reward loop:** use Shop and Bag for eggs, Rare Candy, Mints, Exp. Candy XL, Hatch Incubator, Shiny Incense, Shiny Charm, and Poké Doll.
+- 🗺️ **Covers the full Pokédex:** 1,025 species across generations I–IX, animated sprites where valid sources exist, canonical English species names, and one rarity per evolution line.
+- 🫧 **Stays out of the way:** open Home from the tray or enable an optional floating companion without adding another taskbar button.
 - 📁 **Accepts extra local sources:** add JSON or JSONL folders when a tool stores usage outside the built-in locations.
-- 🔒 **Keeps the boundary clear:** provider data is read-only, and the app does not need a server, SSH, Tailscale, Home Assistant, or a remote usage service.
+- 🔒 **Keeps the boundary clear:** provider data is read-only; the app does not need a server, SSH, Tailscale, Home Assistant, or a remote usage service.
 
 ## 🔁 How progression works
 
@@ -59,11 +59,21 @@ The progression state belongs to PokeTokenBar. It does not write back to Hermes 
 
 ### Poké Doll
 
-The Poké Doll is a consumable Shop item priced at **250,000,000 tokens**. Activate it from the Bag while an egg is incubating: it stays armed until it actually prevents a duplicate, and only then is it consumed. At the hatch decision point, normal species already represented in the Pokédex are excluded, while shiny variants remain valid, so owning Charmander does not block Charmander shiny and a shiny duplicate leaves the Doll armed for the next egg. If every eligible species in the current egg pool is already owned, the hatch waits and the Doll stays armed. From 40% Pokédex completion onward, Home also warns when an egg is incubating while the Doll is not armed. The Doll never changes the active Pokémon or the egg progress.
+The Poké Doll costs **250,000,000 tokens**. Activate it from the Bag while an egg is incubating: it stays armed until it actually prevents a normal duplicate, and only then is it consumed. Normal species already represented in the Pokédex are excluded when an alternative exists; shiny variants remain valid, so a shiny duplicate leaves the Doll armed. If every eligible species is already owned, the hatch waits and the Doll stays armed. From 40% Pokédex completion onward, Home warns when an egg is incubating without the Doll armed.
+
+### Hatch modifiers and shiny odds
+
+- Base egg requirement: **5,000,000 tokens**.
+- Hatch Incubator: halves the next egg requirement to **2,500,000 tokens**.
+- Base shiny odds: **1/64**.
+- Shiny Charm: **1/48**.
+- Shiny Incense: **1/32**, or **1/24** together with Shiny Charm.
+- Hatch Incubator and Shiny Incense are consumed only after a successful hatch.
+- Exp. Candy XL adds **250,000,000 progress** to the active Pokémon without changing usage accounting.
 
 ## 📸 Screenshots
 
-The screenshots below use synthetic values and neutral demo paths. The updated captures show only the native application popover; explanatory text remains in this README rather than inside the image. They are documentation assets, not captures of a personal account or desktop.
+The images below are synthetic documentation captures of the native application popover. They contain only the app window: no desktop, browser, explanatory canvas, or account data.
 
 <table class="screenshot-table">
   <thead>
@@ -80,10 +90,9 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
       </td>
       <td class="screenshot-explanation">
         <strong>The place to start.</strong><br>
-        Home brings the active egg or Pokémon, progress toward the next stage, usage totals, provider details, and the limits status into one compact popover capture. The synthetic release capture uses the popular Pikachu companion. It opens from the tray and does not create a second taskbar button.
+        Home shows the active egg or Pokémon, progress, usage totals, provider details, and official-limit availability. The synthetic capture uses Pikachu as the representative companion and opens from the tray without creating a second taskbar button.
       </td>
     </tr>
-
     <tr>
       <td align="center">
         <img src="docs/images/screenshot-shop.png" width="360" alt="Static Shop popover capture with synthetic progression item prices and new item badges"><br>
@@ -91,7 +100,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
       </td>
       <td class="screenshot-explanation">
         <strong>A place to spend progression tokens.</strong><br>
-        Shop offers optional items such as a fresh egg, Uncommon and Rare eggs, Rare Candy, the Mint, Exp. Candy XL, the Hatch Incubator, Shiny Incense, Shiny Charm, and Poké Doll, arranged as a card grid with an icon, a short description and a price for each item. Exp. Candy XL adds 250,000,000 progress to the active Pokémon, the Hatch Incubator halves the requirement of the next egg, Shiny Incense raises the next hatch shiny odds to 1/32 (1/24 with Shiny Charm), and the Poké Doll stays armed until it prevents a duplicate. Prices and the wallet in the screenshot are synthetic demonstration values, not billing data or an account wallet.
+        Shop uses a three-column card grid. Each card has artwork, a name, an adjacent badge, a short description, a price, and an explicit purchase action. The synthetic view includes the three new hatch/progress items and the three egg tiers.
       </td>
     </tr>
     <tr>
@@ -101,7 +110,7 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
       </td>
       <td class="screenshot-explanation">
         <strong>Use what you have earned.</strong><br>
-        Bag keeps the local item inventory in view and makes each action explicit: Rare Candy, Mint and Exp. Candy XL are consumed on the active Pokémon, while the Poké Doll, the Hatch Incubator and Shiny Incense are armed for the next hatch and consumed only when that hatch happens. Each item carries its own badge beside its name. The counts and activation state shown here are synthetic and do not represent a real purchase history.
+        Bag distinguishes immediate actions from hatch modifiers. Rare Candy, Mint, and Exp. Candy XL act on the active Pokémon; Poké Doll, Hatch Incubator, and Shiny Incense arm the next hatch. The heart, silver fast-forward, and ochre three-star badges sit beside the item names.
       </td>
     </tr>
     <tr>
@@ -111,47 +120,45 @@ The screenshots below use synthetic values and neutral demo paths. The updated c
       </td>
       <td class="screenshot-explanation">
         <strong>See the collection at a glance.</strong><br>
-        The Pokédex lists four entries per row and records discovered stages, one rarity per evolution line, and the representative Pokémon shown in the tray or floating companion. Each shiny specimen carries a star in the top-right corner of its entry, the page bar stays pinned above the rarity filters, and selecting a species changes the companion display, not provider data.
+        The Pokédex shows four entries per row, one public rarity per evolution line, and a shiny star in the top-right corner of shiny entries. The page bar stays pinned above the rarity filters, with 24 entries per page.
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/screenshot-collection-catchlog.png" width="275" alt="Catch Log with synthetic dates and natures"><br>
+        <img src="docs/images/screenshot-collection-catchlog.png" width="380" alt="Static Catch Log popover capture with synthetic evolution histories"><br>
         <strong>🗂️ Catch Log</strong>
       </td>
       <td class="screenshot-explanation">
         <strong>Keep each companion's story.</strong><br>
-        Catch Log separates the active companion from graduated ones and shows the evolution chain, rarity, nature, and neutral demonstration dates for each individual.
+        Catch Log separates collected histories from the current progression and shows the evolution chain, rarity, nature, shiny state, and synthetic date for each companion.
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="docs/images/settings.png" width="360" alt="Static Settings popover capture with general, tray, companion and notification controls">
-        <img src="docs/images/screenshot-scan-folders.png" width="195" alt="Advanced settings with a synthetic additional scan folder"><br>
+        <img src="docs/images/settings.png" width="360" alt="Static Settings popover capture with general, tray, companion and notification controls"><br>
+        <img src="docs/images/screenshot-scan-folders.png" width="360" alt="Static advanced Settings popover capture with a synthetic read-only scan section"><br>
         <strong>⚙️ Settings & progression</strong>
       </td>
       <td class="screenshot-explanation">
-        <strong>The two Settings images belong together; the primary Settings capture is the native popover and the advanced scan image remains a separate synthetic detail view.</strong>
+        <strong>Control the local experience.</strong>
         <ul>
-          <li><strong>General:</strong> choose the language, refresh cadence, limit display, launch-at-login behavior, and representative Pokémon.</li>
-          <li><strong>Tray:</strong> decide which daily totals and limit details appear in the tray tooltip.</li>
-          <li><strong>Companion:</strong> show or hide the floating pet, adjust its size, and enable the optional Gold walking overlay.</li>
-          <li><strong>Updates:</strong> choose whether to receive update notices and check the release page.</li>
-          <li><strong>Advanced scan:</strong> add extra JSON or JSONL folders. The `C:\Demo\AI-Logs` path is a synthetic example; these folders are read-only.</li>
+          <li><strong>General:</strong> language, sprite style, refresh cadence, limit display, launch-at-login, and representative Pokémon.</li>
+          <li><strong>Tray:</strong> choose which daily totals and limit details appear in the tray tooltip.</li>
+          <li><strong>Companion:</strong> show or hide the floating pet, adjust its size, and configure the optional Gold overlay.</li>
+          <li><strong>Updates and notifications:</strong> choose update notices, bubbles, limits and companion events.</li>
+          <li><strong>Advanced scan:</strong> add extra JSON or JSONL folders in read-only counter mode. The displayed path is synthetic.</li>
         </ul>
-        These controls change PokeTokenBar's own settings and progression display. They never modify Hermes or another provider's files.
+        Settings change PokeTokenBar's own display and progression behavior; they do not modify Hermes or provider files.
       </td>
     </tr>
-
-
   </tbody>
 </table>
 
-See [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) for the complete image index and the rules used to keep documentation data anonymous.
+See [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) for the image index and the rules used to keep documentation data anonymous.
 
 ## 🔌 Local sources
 
-The app checks each source independently and skips locations that are not installed. The built-in readers currently cover:
+The app checks each source independently and skips locations that are not installed. Built-in readers currently cover:
 
 - Claude Code
 - Gemini CLI
@@ -165,7 +172,7 @@ The app checks each source independently and skips locations that are not instal
 - Pi Agent
 - Hermes Agent local SQLite usage
 
-PokeTokenBar reads the usage metadata needed for totals and attribution. It does not need prompts or message bodies. Hermes data is opened read-only and remains compatible with a live SQLite WAL database.
+PokeTokenBar reads only the usage metadata needed for totals and attribution. It does not need prompts or message bodies. Hermes data is opened read-only and remains compatible with a live SQLite WAL database.
 
 Official quota values appear only when a local source provides them. If that data is unavailable, the interface says so instead of inventing a percentage or reset time.
 
@@ -179,10 +186,10 @@ PokeTokenBar is designed around local data:
 - no SSH, Tailscale, or Home Assistant dependency;
 - provider databases and log files are read-only;
 - prompts, credentials, API keys, tokens, cookies, and connection strings are not stored in the repository or release assets;
-- the companion's own progression state stays outside the repository in the normal application-data directory;
-- an export is an explicit user action and should be treated as personal data.
+- the companion's progression state stays outside the repository in the normal application-data directory;
+- exporting a save is an explicit user action and should be treated as personal data.
 
-The release audit rejects personal absolute paths, credential-looking values, local database files, logs, and companion state. More detail is available in [`SECURITY.md`](SECURITY.md) and [`RELEASE.md`](RELEASE.md).
+The release audit rejects personal absolute paths, credential-looking values, local database files, logs, and companion state. See [`SECURITY.md`](SECURITY.md) and [`RELEASE.md`](RELEASE.md) for details.
 
 ## 📦 Install
 
@@ -193,7 +200,7 @@ The current release is `v0.2.0`.
 3. Verify the SHA-256 value with the attached `SHA256SUMS.txt`.
 4. Run the installer. PokeTokenBar starts in the notification area; click its icon to open Home.
 
-The current installer is not Authenticode-signed, so Windows SmartScreen may display a warning. Check the release source and checksum before installing.
+The installer is not Authenticode-signed, so Windows SmartScreen may display a warning. Check the release source and checksum before installing.
 
 ## 🧰 Build from source
 
@@ -252,6 +259,6 @@ This project also uses:
 
 The source code in this repository is released under the [MIT License](LICENSE). The license applies to this project's source code and does not grant rights to third-party trademarks, artwork, or data accessed through the app.
 
-PokeTokenBar is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, Creatures Inc., or The Pokémon Company. "Pokémon" and related names, characters, and imagery belong to their respective owners.
+PokeTokenBar is an unofficial, non-commercial fan project. It is not affiliated with, endorsed, sponsored, or approved by Nintendo, Game Freak, Creatures Inc., or The Pokémon Company. “Pokémon” and related names, characters, and imagery belong to their respective owners.
 
-The application is provided "as is", without warranty of any kind. This notice is not legal advice.
+The application is provided “as is”, without warranty of any kind. This notice is not legal advice.
