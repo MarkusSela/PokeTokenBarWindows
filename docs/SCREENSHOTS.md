@@ -6,7 +6,7 @@ This page documents the images used by the release README. Each screenshot is pa
 
 | Screenshot | Feature | Description | Data policy |
 | --- | --- | --- | --- |
-| `screenshot-home.gif` | Home | The animated Home panel combines the active companion, progress, daily and period usage, provider details, and the limits status. | Synthetic rows, totals, and companion progress only. |
+| `screenshot-home.gif` | Home | Animated landscape documentation capture with Pikachu: the Home panel combines the active companion, progress, daily and period usage, provider details, and the limits status. | Synthetic rows, totals, and companion progress only. |
 | `tray-and-popover.png` | Tray access | The notification-area icon opens Home without a separate taskbar button. Closing Home leaves the app resident in the tray. | Neutral illustration with no unrelated tray icons, clock, notifications, or personal app names. |
 | `screenshot-shop.png` | Shop | Landscape documentation board showing the three-column item card grid, the three new items, item badges, synthetic prices and the synthetic wallet. | Synthetic wallet and prices only. No billing or account balance. |
 | `screenshot-bag.png` | Bag | Landscape documentation board showing item artwork, the adjacent Poké Doll heart, the silver Incubator badge, the ochre three-star Incense badge and explicit hatch actions. | Synthetic item counts and activation state only. |
